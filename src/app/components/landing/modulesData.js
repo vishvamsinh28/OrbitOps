@@ -9,7 +9,7 @@ export const modules = [
     id: "02",
     icon: "dashboard",
     title: "Dashboard",
-    body: "KPI cards for availability, allocations, active bookings, and pending transfers, with overdue returns broken out from what's simply upcoming.",
+    body: "Track asset availability, active allocations, bookings, transfers, and overdue returns from one dashboard.",
   },
   {
     id: "03",
