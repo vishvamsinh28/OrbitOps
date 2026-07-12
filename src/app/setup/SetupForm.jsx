@@ -35,7 +35,7 @@ export function SetupForm() {
           <input
             name="password"
             type={showPassword ? "text" : "password"}
-            minLength={12}
+            minLength={8}
             required
             className="min-w-0 flex-1 bg-transparent px-3 py-2.5 outline-none"
           />

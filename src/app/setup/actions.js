@@ -12,9 +12,9 @@ export async function createFirstAdminAction(_prevState, formData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
 
-  if (!name || !email || password.length < 12) {
+  if (!name || !email || password.length < 8) {
     return {
-      error: "Enter a name, email, and password with at least 12 characters.",
+      error: "Enter a name, email, and password with at least 8 characters.",
     };
   }
 
