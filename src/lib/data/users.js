@@ -37,8 +37,11 @@ export async function adminExists() {
   return exists(await query("select count(*) from users where role = 'Admin'"));
 }
 
+const HOLDER_TABLES = { User: "users", Department: "departments" };
+
 export async function activeHolderExists(type, holderId) {
-  const table = type === "User" ? "users" : "departments";
+  const table = HOLDER_TABLES[type];
+  if (!table) return false;
   return exists(
     await query(
       `select count(*) from ${table} where id = $1 and status = 'Active'`,
