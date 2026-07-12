@@ -5,7 +5,6 @@ import { connectDB } from "@/lib/db";
 import {
   createInitialOrganizationAdmin,
   getUserByEmail,
-  hasUsers,
 } from "@/lib/data";
 import { hashPassword } from "@/lib/password";
 import { setSession } from "@/lib/session";
@@ -26,10 +25,6 @@ export async function createFirstAdminAction(_prevState, formData) {
 
   await connectDB();
 
-  if (await hasUsers()) {
-    return { error: "Setup is already complete. Log in to continue." };
-  }
-
   if (await getUserByEmail(email)) {
     return { error: "That email is already registered." };
   }
@@ -48,10 +43,6 @@ export async function createFirstAdminAction(_prevState, formData) {
     }
 
     throw error;
-  }
-
-  if (!setup) {
-    return { error: "Setup is already complete. Log in to continue." };
   }
 
   const { organization, admin } = setup;

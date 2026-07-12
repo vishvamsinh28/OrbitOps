@@ -56,12 +56,6 @@ export async function createInitialOrganizationAdmin({
     await client.query("begin");
     await client.query("select pg_advisory_xact_lock(hashtext('orbitops_setup'))");
 
-    const users = await client.query("select count(*) from users");
-    if (exists(users)) {
-      await client.query("rollback");
-      return null;
-    }
-
     const organizationId = id();
     const organization = one(
       await client.query(
