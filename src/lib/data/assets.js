@@ -55,6 +55,31 @@ export async function getAssetById(assetId) {
   return assetRow(one(result));
 }
 
+export async function getAssetEditData(assetId) {
+  const [asset, categories, departments] = await Promise.all([
+    query(`select a.id as "_id", a.name, a.asset_tag as "assetTag",
+      a.category_id as "categoryId", c.name as "categoryName",
+      a.serial_number as "serialNumber", a.acquisition_date as "acquisitionDate",
+      a.acquisition_cost as "acquisitionCost", a.condition, a.location,
+      a.department_id as "departmentId", d.name as "departmentName",
+      a.description, a.image_url as "imageUrl", a.is_bookable as "isBookable",
+      a.status, a.current_holder_type as "currentHolderType",
+      a.current_holder_id as "currentHolder"
+      from assets a
+      left join asset_categories c on c.id = a.category_id
+      left join departments d on d.id = a.department_id
+      where a.id = $1`, [assetId]),
+    query(`select id as "_id", name, status from asset_categories where status = 'Active' order by name`),
+    query(`select id as "_id", name, status from departments where status = 'Active' order by name`),
+  ]);
+
+  return {
+    asset: assetRow(one(asset)),
+    categories: categories.rows,
+    departments: departments.rows,
+  };
+}
+
 export async function createAsset(data) {
   const result = await query(
     `insert into assets
@@ -69,6 +94,32 @@ export async function createAsset(data) {
       data.acquisitionCost || null, data.condition || "Good",
       data.location || null, data.department || null, data.description || null,
       data.imageUrl || null, data.isBookable,
+    ],
+  );
+  return one(result);
+}
+
+export async function updateAsset(data) {
+  const result = await query(
+    `update assets set name = $2, category_id = $3, serial_number = $4,
+      acquisition_date = $5, acquisition_cost = $6, condition = $7,
+      location = $8, department_id = $9, description = $10,
+      image_url = $11, is_bookable = $12, updated_at = now()
+     where id = $1
+     returning id as "_id", asset_tag as "assetTag"`,
+    [
+      data.assetId,
+      data.name,
+      data.category || null,
+      data.serialNumber || null,
+      data.acquisitionDate || null,
+      data.acquisitionCost || null,
+      data.condition || "Good",
+      data.location || null,
+      data.department || null,
+      data.description || null,
+      data.imageUrl || null,
+      data.isBookable,
     ],
   );
   return one(result);
@@ -125,6 +176,19 @@ export async function bookingOverlaps({ asset, start, end }) {
        and start_at < $3 and end_at > $2`,
     [asset, start, end],
   ));
+}
+
+export async function cancelBooking({ bookingId, userId, isManager }) {
+  const result = await query(
+    `update bookings b set status = 'Cancelled', updated_at = now()
+     from assets a
+     where b.asset_id = a.id and b.id = $1
+       and b.status not in ('Cancelled', 'Completed')
+       and ($2 = true or b.booked_by = $3)
+     returning b.id as "_id", b.asset_id as "asset", a.asset_tag as "assetTag"`,
+    [bookingId, isManager, userId],
+  );
+  return one(result);
 }
 
 export async function listBookingData() {

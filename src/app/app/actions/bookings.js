@@ -5,6 +5,7 @@ import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import {
   bookingOverlaps,
+  cancelBooking,
   createBooking,
   getAssetById,
 } from "@/lib/data";
@@ -60,26 +61,19 @@ export async function cancelBookingAction(formData) {
   await connectDB();
 
   const bookingId = value(formData, "booking");
-  const booking = await Booking.findById(bookingId);
-  if (!booking || booking.status === "Cancelled" || booking.status === "Completed") {
-    return;
-  }
-
-  const isOwner = booking.bookedBy.toString() === user._id;
-  const isManager = canManageAssets(user.role);
-  if (!isOwner && !isManager) return;
-
-  booking.status = "Cancelled";
-  await booking.save();
+  const booking = await cancelBooking({
+    bookingId,
+    userId: user._id,
+    isManager: canManageAssets(user.role),
+  });
+  if (!booking) return;
 
   await logActivity({
     actor: user._id,
     action: "Booking cancelled",
     entityType: "Booking",
     entityId: booking._id,
-    description: `Cancelled booking for ${
-      (await Asset.findById(booking.asset))?.assetTag || "unknown"
-    }.`,
+    description: `Cancelled booking for ${booking.assetTag || "unknown"}.`,
   });
 
   revalidatePath("/app/bookings");

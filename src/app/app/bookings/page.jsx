@@ -1,16 +1,9 @@
 import { PageHeader } from "../components/PageHeader";
 import { Panel } from "../components/Panel";
 import { SelectField, SubmitButton, TextField } from "../components/FormControls";
-<<<<<<< HEAD
 import { cancelBookingAction, createBookingAction } from "../actions/bookings";
 import { canManageAssets, requireUser } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import Asset from "@/models/Asset";
-import Booking from "@/models/Booking";
-=======
-import { createBookingAction } from "../actions/bookings";
 import { listBookingData } from "@/lib/data";
->>>>>>> 39aa180 (chore: swithc to postgres)
 
 async function getBookingData() {
   return listBookingData();

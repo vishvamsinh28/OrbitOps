@@ -5,9 +5,7 @@ import { SelectField, SubmitButton, TextField } from "../../../components/FormCo
 import { updateAssetAction } from "../../../actions/assets";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import Asset from "@/models/Asset";
-import AssetCategory from "@/models/AssetCategory";
-import Department from "@/models/Department";
+import { getAssetEditData } from "@/lib/data";
 
 export default async function EditAssetPage({ params }) {
   const user = await requireUser();
@@ -16,14 +14,7 @@ export default async function EditAssetPage({ params }) {
   const { id } = await params;
   await connectDB();
 
-  const [asset, categories, departments] = await Promise.all([
-    Asset.findById(id)
-      .populate("category", "name")
-      .populate("department", "name")
-      .lean(),
-    AssetCategory.find({ status: "Active" }).sort({ name: 1 }).lean(),
-    Department.find({ status: "Active" }).sort({ name: 1 }).lean(),
-  ]);
+  const { asset, categories, departments } = await getAssetEditData(id);
 
   if (!asset) notFound();
 
@@ -44,14 +35,15 @@ export default async function EditAssetPage({ params }) {
               required
               defaultValue={asset.name}
             />
-            <SelectField name="category" label="Category" required>
+            <SelectField
+              name="category"
+              label="Category"
+              required
+              defaultValue={asset.category?._id || ""}
+            >
               <option value="">Select category</option>
               {categories.map((cat) => (
-                <option
-                  key={cat._id}
-                  value={cat._id}
-                  selected={cat._id === asset.category?._id?.toString()}
-                >
+                <option key={cat._id} value={cat._id}>
                   {cat.name}
                 </option>
               ))}
@@ -71,14 +63,14 @@ export default async function EditAssetPage({ params }) {
               label="Condition"
               defaultValue={asset.condition || "Good"}
             />
-            <SelectField name="department" label="Department">
+            <SelectField
+              name="department"
+              label="Department"
+              defaultValue={asset.department?._id || ""}
+            >
               <option value="">No department</option>
               {departments.map((dept) => (
-                <option
-                  key={dept._id}
-                  value={dept._id}
-                  selected={dept._id === asset.department?._id?.toString()}
-                >
+                <option key={dept._id} value={dept._id}>
                   {dept.name}
                 </option>
               ))}

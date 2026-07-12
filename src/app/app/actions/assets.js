@@ -9,6 +9,7 @@ import {
   createAsset,
   getAssetById,
   returnAllocation,
+  updateAsset,
   updateAssetHolder,
 } from "@/lib/data";
 import { logActivity, notifyUser } from "@/lib/activity";
@@ -137,22 +138,21 @@ export async function updateAssetAction(formData) {
   await connectDB();
 
   const assetId = value(formData, "assetId");
-  const asset = await Asset.findById(assetId);
+  const asset = await updateAsset({
+    assetId,
+    name: value(formData, "name"),
+    category: value(formData, "category"),
+    serialNumber: value(formData, "serialNumber"),
+    acquisitionDate: value(formData, "acquisitionDate") || undefined,
+    acquisitionCost: Number(value(formData, "acquisitionCost")) || undefined,
+    condition: value(formData, "condition") || "Good",
+    location: value(formData, "location"),
+    department: value(formData, "department") || undefined,
+    description: value(formData, "description"),
+    imageUrl: value(formData, "imageUrl"),
+    isBookable: formData.get("isBookable") === "on",
+  });
   if (!asset) return;
-
-  asset.name = value(formData, "name");
-  asset.category = value(formData, "category");
-  asset.serialNumber = value(formData, "serialNumber");
-  asset.acquisitionDate = value(formData, "acquisitionDate") || undefined;
-  asset.acquisitionCost = Number(value(formData, "acquisitionCost")) || undefined;
-  asset.condition = value(formData, "condition") || "Good";
-  asset.location = value(formData, "location");
-  asset.department = value(formData, "department") || undefined;
-  asset.description = value(formData, "description");
-  asset.imageUrl = value(formData, "imageUrl");
-  asset.isBookable = formData.get("isBookable") === "on";
-
-  await asset.save();
 
   await logActivity({
     actor: user._id,
