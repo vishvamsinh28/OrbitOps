@@ -82,8 +82,7 @@ export function TickerAndStats() {
     </span>
   </div>
 </div>
-
-<div className="relative z-10 border-y border-[rgba(148,168,210,0.14)] py-[30px]">
+      <div className="relative z-10 border-y border-[rgba(148,168,210,0.14)] py-[30px]">
   <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-6 px-5 min-[601px]:grid-cols-2 min-[601px]:px-8 min-[961px]:grid-cols-4">
     <div className="stat reveal">
       <strong className="mb-1 block font-display text-[24px] font-semibold text-[#E9EDF6] min-[961px]:text-[30px]">
