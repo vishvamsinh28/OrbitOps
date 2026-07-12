@@ -33,7 +33,7 @@ export const modules = [
     id: "06",
     icon: "calendar",
     title: "Resource booking",
-    body: "Calendar-based booking for shared resources, with overlap validation down to the minute a slot begins.",
+    body: "Book shared resources through a calendar with precise checks that prevent overlapping reservations.",
   },
   {
     id: "07",
@@ -51,7 +51,7 @@ export const modules = [
     id: "09",
     icon: "chart",
     title: "Reports & analytics",
-    body: "Utilization trends, idle assets, maintenance frequency, and a booking heatmap — exportable for the meetings spreadsheets used to be for.",
+    body: "Turn asset activity into clear trends, heatmaps, and reports that can be exported for reviews and planning.",
   },
   {
     id: "10",
