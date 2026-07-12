@@ -40,7 +40,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-main {
+main:not(.allow-overflow) {
   overflow: clip;
 }
 

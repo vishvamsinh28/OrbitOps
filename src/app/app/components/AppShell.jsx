@@ -7,7 +7,7 @@ export async function AppShell({ children }) {
   const navItems = getVisibleNavItems(user.role);
 
   return (
-    <main className="min-h-screen bg-[#080B14]">
+    <main className="allow-overflow min-h-screen bg-[#080B14]">
       <aside className="fixed inset-y-0 left-0 hidden w-[240px] border-r border-[rgba(148,168,210,0.14)] bg-[#0D1220] px-4 py-5 min-[961px]:block">
         <Link href="/app/dashboard" className="font-display text-xl font-bold">
           ORBITOPS
