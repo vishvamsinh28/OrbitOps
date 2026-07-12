@@ -93,8 +93,7 @@ export function WorkflowSection() {
             requests are rejected automatically.
           </p>
         </div>
-
-        <div className="timeline-step reveal">
+                <div className="timeline-step reveal">
           <span className="mb-[5px] block font-mono text-[11px] text-[#586180]">
             06
           </span>
