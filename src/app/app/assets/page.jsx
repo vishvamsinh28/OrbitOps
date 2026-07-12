@@ -33,6 +33,12 @@ export default async function AssetsPage({ searchParams }) {
   const { assets, categories, departments, users, allocations } =
     await getAssetsData(organizationId, filters);
   const blockedAsset = assets.find((asset) => asset._id === blockedAssetId);
+  const returnableAllocations = canManage
+    ? allocations
+    : allocations.filter(
+        (allocation) =>
+          allocation.holderType === "User" && allocation.holder === user._id,
+      );
 
   return (
     <>
@@ -269,13 +275,13 @@ export default async function AssetsPage({ searchParams }) {
         </div>
       </Panel>
 
-      {canManage && allocations.length > 0 ? (
+      {returnableAllocations.length > 0 ? (
         <Panel className="mt-6">
           <h2 className="font-display text-xl font-semibold">
-            Active allocations
+            {canManage ? "Active allocations" : "My active allocations"}
           </h2>
           <div className="mt-5 grid gap-4">
-            {allocations.map((allocation) => (
+            {returnableAllocations.map((allocation) => (
               <form
                 key={allocation._id}
                 action={returnAssetAction}

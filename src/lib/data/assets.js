@@ -55,7 +55,8 @@ export async function listAssetsData(organizationId, filters = {}) {
     query(`select id as "_id", name, email, role, status from users
       where status = 'Active' and organization_id = $1 order by name`, [organizationId]),
     query(`select al.id as "_id", al.expected_return_date as "expectedReturnDate",
-      al.asset_id as "assetId", a.name as "assetName", a.asset_tag as "assetTag"
+      al.asset_id as "assetId", al.holder_type as "holderType",
+      al.holder_id as "holder", a.name as "assetName", a.asset_tag as "assetTag"
       from allocations al
       join assets a on a.id = al.asset_id and a.organization_id = al.organization_id
       where al.status = 'Active' and al.organization_id = $1
@@ -73,6 +74,8 @@ export async function listAssetsData(organizationId, filters = {}) {
     allocations: allocations.rows.map((row) => ({
       _id: row._id,
       expectedReturnDate: row.expectedReturnDate,
+      holderType: row.holderType,
+      holder: row.holder,
       asset: { _id: row.assetId, name: row.assetName, assetTag: row.assetTag },
     })),
   };
