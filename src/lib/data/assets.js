@@ -169,6 +169,26 @@ export async function returnAllocation({ allocationId, conditionNotes }) {
   return one(result);
 }
 
+export async function getAssetHistory(assetId) {
+  const [allocations, maintenance] = await Promise.all([
+    query(`select al.id as "_id", al.holder_type as "holderType",
+      al.holder_id as "holderId", al.status, al.allocation_date as "allocationDate",
+      al.expected_return_date as "expectedReturnDate", al.return_date as "returnDate",
+      al.notes, al.created_at as "createdAt"
+      from allocations al where al.asset_id = $1
+      order by al.created_at desc limit 20`, [assetId]),
+    query(`select m.id as "_id", m.issue_description as "issueDescription",
+      m.priority, m.status, m.assigned_technician_name as "technician",
+      m.resolution_notes as "resolutionNotes", m.created_at as "createdAt"
+      from maintenance_requests m where m.asset_id = $1
+      order by m.created_at desc limit 20`, [assetId]),
+  ]);
+  return {
+    allocations: allocations.rows,
+    maintenance: maintenance.rows,
+  };
+}
+
 export async function createBooking({ asset, bookedBy, start, end, purpose }) {
   const result = await query(
     `insert into bookings (id, asset_id, booked_by, start_at, end_at, purpose)
