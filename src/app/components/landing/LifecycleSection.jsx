@@ -23,7 +23,7 @@ export function LifecycleSection() {
       </div>
 
       <div className="lifecycle-panel reveal rounded-2xl border border-[rgba(148,168,210,0.14)] px-5 py-10 min-[601px]:px-10 min-[601px]:py-12">
-        <div className="mt-3 flex flex-wrap items-center justify-center">
+        <div className="life-flow mt-3 flex items-center justify-center">
           <div className="life-node">
             <i className="text-[#3DDC97]">
               <span className="block h-[7px] w-[7px] rounded-full bg-[#3DDC97]" />
@@ -31,7 +31,7 @@ export function LifecycleSection() {
             Available
           </div>
 
-          <span className="px-3 text-base text-[#586180]">
+          <span className="life-arrow px-3 text-base text-[#586180]">
             ⇄
           </span>
 
@@ -42,7 +42,7 @@ export function LifecycleSection() {
             Under Maintenance
           </div>
 
-          <span className="px-3 text-base text-[#586180]">
+          <span className="life-arrow px-3 text-base text-[#586180]">
             →
           </span>
 
@@ -53,7 +53,7 @@ export function LifecycleSection() {
             Available
           </div>
 
-          <span className="px-3 text-base text-[#586180]">
+          <span className="life-arrow px-3 text-base text-[#586180]">
             →
           </span>
 
@@ -64,7 +64,7 @@ export function LifecycleSection() {
             Allocated
           </div>
 
-          <span className="px-3 text-base text-[#586180]">
+          <span className="life-arrow px-3 text-base text-[#586180]">
             →
           </span>
 

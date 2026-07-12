@@ -87,7 +87,7 @@ export function TickerAndStats() {
   <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-6 px-5 min-[601px]:grid-cols-2 min-[601px]:px-8 min-[961px]:grid-cols-4">
     <div className="stat reveal">
       <strong className="mb-1 block font-display text-[24px] font-semibold text-[#E9EDF6] min-[961px]:text-[30px]">
-        Available → Allocated
+        Allocation checks
       </strong>
 
       <span className="font-mono text-[11.5px] uppercase tracking-[0.03em] text-[#586180]">
