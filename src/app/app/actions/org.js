@@ -136,15 +136,20 @@ export async function updateEmployeeAction(formData) {
   const organizationId = user.organization?._id;
   if (!organizationId) return;
 
+  const employeeId = value(formData, "employeeId");
+  const requestedRole = VALID_ROLES.includes(value(formData, "role"))
+    ? value(formData, "role")
+    : ROLES.EMPLOYEE;
+  const requestedStatus = VALID_STATUSES.includes(value(formData, "status"))
+    ? value(formData, "status")
+    : "Active";
+  const isSelfUpdate = employeeId === user._id;
+
   const updatedUser = await updateEmployee({
-    employeeId: value(formData, "employeeId"),
-    role: VALID_ROLES.includes(value(formData, "role"))
-      ? value(formData, "role")
-      : ROLES.EMPLOYEE,
+    employeeId,
+    role: isSelfUpdate ? ROLES.ADMIN : requestedRole,
     department: value(formData, "department"),
-    status: VALID_STATUSES.includes(value(formData, "status"))
-      ? value(formData, "status")
-      : "Active",
+    status: isSelfUpdate ? "Active" : requestedStatus,
     organizationId,
   });
 
