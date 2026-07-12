@@ -66,11 +66,11 @@ export async function listAdminData() {
   };
 }
 
-export async function createDepartment({ name, head }) {
+export async function createDepartment({ name, parent, head }) {
   const result = await query(
-    `insert into departments (id, name, head_id) values ($1, $2, $3)
+    `insert into departments (id, name, parent_id, head_id) values ($1, $2, $3, $4)
      returning id as "_id", name`,
-    [id(), name, head || null],
+    [id(), name, parent || null, head || null],
   );
   return one(result);
 }
