@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireUser } from "@/lib/auth";
+import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import Asset from "@/models/Asset";
@@ -51,6 +51,37 @@ export async function createBookingAction(formData) {
     entityType: "Booking",
     entityId: booking._id,
     description: `Booked ${asset.assetTag}.`,
+  });
+
+  revalidatePath("/app/bookings");
+  revalidatePath("/app/dashboard");
+}
+
+export async function cancelBookingAction(formData) {
+  const user = await requireUser();
+  await connectDB();
+
+  const bookingId = value(formData, "booking");
+  const booking = await Booking.findById(bookingId);
+  if (!booking || booking.status === "Cancelled" || booking.status === "Completed") {
+    return;
+  }
+
+  const isOwner = booking.bookedBy.toString() === user._id;
+  const isManager = canManageAssets(user.role);
+  if (!isOwner && !isManager) return;
+
+  booking.status = "Cancelled";
+  await booking.save();
+
+  await logActivity({
+    actor: user._id,
+    action: "Booking cancelled",
+    entityType: "Booking",
+    entityId: booking._id,
+    description: `Cancelled booking for ${
+      (await Asset.findById(booking.asset))?.assetTag || "unknown"
+    }.`,
   });
 
   revalidatePath("/app/bookings");

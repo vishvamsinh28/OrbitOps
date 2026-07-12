@@ -158,9 +158,19 @@ export default async function AssetsPage() {
                   {asset.location || "No location"}
                 </p>
               </div>
-              <span className="self-start rounded-md border border-white/10 px-3 py-1 font-mono text-xs text-[#8B98B4]">
-                {asset.isBookable ? "Bookable" : "Asset"}
-              </span>
+              <div className="flex items-start gap-2">
+                {canManage ? (
+                  <a
+                    href={`/app/assets/${asset._id}/edit`}
+                    className="rounded-md border border-white/10 px-3 py-1 font-mono text-xs text-[#8B98B4] hover:text-[#E9EDF6]"
+                  >
+                    Edit
+                  </a>
+                ) : null}
+                <span className="self-start rounded-md border border-white/10 px-3 py-1 font-mono text-xs text-[#8B98B4]">
+                  {asset.isBookable ? "Bookable" : "Asset"}
+                </span>
+              </div>
             </article>
           ))}
           {assets.length === 0 ? (
