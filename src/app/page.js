@@ -14,6 +14,42 @@ export default function Home() {
     const countElements = document.querySelectorAll("[data-count]");
     const heroSection = document.querySelector(".hero-section");
     const tiltCards = document.querySelectorAll(".tilt-card");
+    const animationFrameIds = new Set();
+
+    const animateCount = (element) => {
+      if (element.dataset.counted === "true") return;
+
+      element.dataset.counted = "true";
+
+      const target = Number.parseInt(element.dataset.count || "0", 10);
+
+      if (reducedMotion) {
+        element.textContent = String(target);
+        return;
+      }
+
+      let start = null;
+      const duration = 900;
+
+      const step = (timestamp) => {
+        if (start === null) {
+          start = timestamp;
+        }
+
+        const progress = Math.min((timestamp - start) / duration, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+        element.textContent = String(Math.round(easedProgress * target));
+
+        if (progress < 1) {
+          const frameId = window.requestAnimationFrame(step);
+          animationFrameIds.add(frameId);
+        }
+      };
+
+      const frameId = window.requestAnimationFrame(step);
+      animationFrameIds.add(frameId);
+    };
 
     const handleScroll = () => {
       if (!header) return;
@@ -29,6 +65,7 @@ export default function Home() {
     handleScroll();
 
     let observer;
+    let countObserver;
 
     if ("IntersectionObserver" in window) {
       observer = new IntersectionObserver(
@@ -49,46 +86,32 @@ export default function Home() {
       revealElements.forEach((element) => {
         observer.observe(element);
       });
+
+      countObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateCount(entry.target);
+              countObserver.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.35,
+          rootMargin: "0px 0px -24px 0px",
+        },
+      );
+
+      countElements.forEach((element) => {
+        countObserver.observe(element);
+      });
     } else {
       revealElements.forEach((element) => {
         element.classList.add("in");
       });
+
+      countElements.forEach(animateCount);
     }
-
-    const animationFrameIds = [];
-
-    countElements.forEach((element) => {
-      const target = Number.parseInt(element.dataset.count || "0", 10);
-
-      if (reducedMotion) {
-        element.textContent = String(target);
-        return;
-      }
-
-      let start = null;
-      const duration = 900;
-
-      const animateCount = (timestamp) => {
-        if (start === null) {
-          start = timestamp;
-        }
-
-        const progress = Math.min((timestamp - start) / duration, 1);
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-
-        element.textContent = String(
-          Math.round(easedProgress * target),
-        );
-
-        if (progress < 1) {
-          const frameId = window.requestAnimationFrame(animateCount);
-          animationFrameIds.push(frameId);
-        }
-      };
-
-      const frameId = window.requestAnimationFrame(animateCount);
-      animationFrameIds.push(frameId);
-    });
 
     const handleHeroPointerMove = (event) => {
       if (!heroSection) return;
@@ -151,6 +174,7 @@ export default function Home() {
       );
 
       observer?.disconnect();
+      countObserver?.disconnect();
 
       animationFrameIds.forEach((frameId) => {
         window.cancelAnimationFrame(frameId);
@@ -218,9 +242,12 @@ export default function Home() {
 
             <a
               href="#cta"
-              className="rounded-md border border-[rgba(148,168,210,0.28)] px-[18px] py-[9px] font-mono text-[13px] transition-all hover:border-[#FFB020] hover:bg-[rgba(255,176,32,0.14)] hover:text-[#FFB020]"
+              className="rounded-md border border-[rgba(148,168,210,0.28)] px-3 py-[9px] text-center font-mono text-[12px] leading-none transition-all hover:border-[#FFB020] hover:bg-[rgba(255,176,32,0.14)] hover:text-[#FFB020] min-[421px]:px-[18px] min-[421px]:text-[13px]"
             >
-              Request a walkthrough
+              <span className="min-[421px]:hidden">Walkthrough</span>
+              <span className="hidden min-[421px]:inline">
+                Request a walkthrough
+              </span>
             </a>
           </nav>
         </div>
@@ -271,8 +298,8 @@ export default function Home() {
             </a>
           </div>
 
-          <div className="flex flex-wrap border-t border-[rgba(148,168,210,0.14)] pt-[26px] font-mono text-xs text-[#586180]">
-            <div className="mr-7 border-r border-[rgba(148,168,210,0.14)] pr-7">
+          <div className="hero-stat-grid border-t border-[rgba(148,168,210,0.14)] pt-[26px] font-mono text-xs text-[#586180]">
+            <div className="hero-stat">
               <strong
                 data-count="7"
                 className="mb-0.5 block font-display text-[22px] font-semibold text-[#E9EDF6]"
@@ -282,7 +309,7 @@ export default function Home() {
               lifecycle states
             </div>
 
-            <div className="mr-7 border-r border-[rgba(148,168,210,0.14)] pr-7">
+            <div className="hero-stat">
               <strong
                 data-count="10"
                 className="mb-0.5 block font-display text-[22px] font-semibold text-[#E9EDF6]"
@@ -292,7 +319,7 @@ export default function Home() {
               core modules
             </div>
 
-            <div className="mr-7 border-r border-[rgba(148,168,210,0.14)] pr-7">
+            <div className="hero-stat">
               <strong
                 data-count="4"
                 className="mb-0.5 block font-display text-[22px] font-semibold text-[#E9EDF6]"
@@ -302,7 +329,7 @@ export default function Home() {
               role tiers
             </div>
 
-            <div>
+            <div className="hero-stat">
               <strong
                 data-count="0"
                 className="mb-0.5 block font-display text-[22px] font-semibold text-[#E9EDF6]"
