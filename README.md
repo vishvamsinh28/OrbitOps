@@ -1,6 +1,8 @@
 # OrbitOps
 
-OrbitOps is a PostgreSQL-backed asset and operations management MVP built with Next.js. It combines employee onboarding, asset registration, allocation, bookings, maintenance, transfers, notifications, activity logs, and audit-ready records in one system of record.
+OrbitOps is an asset and resource operations app for organizations that need one place to track equipment, rooms, vehicles, shared resources, assignments, bookings, maintenance, transfers, audits, notifications, and activity history.
+
+The app supports multiple organizations in the same installation. Each organization has its own Admin account, employee directory, departments, categories, assets, workflows, and reports.
 
 ## Tech Stack
 
@@ -12,13 +14,28 @@ OrbitOps is a PostgreSQL-backed asset and operations management MVP built with N
 
 ## Features
 
-- Public landing page with responsive product sections
-- Employee-only signup flow
-- Organization setup flow that creates a workspace and its first Admin
-- Login, logout, and protected app routes
-- Role-aware admin, asset, booking, maintenance, transfer, audit, report, and notification screens
-- Asset categories, departments, employee directory, allocations, bookings, transfers, and maintenance requests
-- Audit cycles, discrepancy reports, activity logging, user notifications, and exportable operational reports
+- Public landing page with responsive product sections.
+- Organization setup flow for creating a new workspace and its first Admin.
+- Employee signup flow where users choose an existing organization.
+- Login, logout, password reset request, and protected app routes.
+- Role-aware navigation and permissions.
+- Asset registry with categories, departments, status, condition, location, images, and documents.
+- Asset allocation and return workflows.
+- Bookable assets and resource booking checks.
+- Maintenance requests with priority, status, technician assignment, notes, and attachments.
+- Transfer request and approval workflow.
+- Audit cycles, audit items, discrepancy tracking, and audit closure.
+- Activity logs and in-app notifications.
+- Reports for utilization, maintenance, allocations, and bookings.
+
+## Roles
+
+- `Admin` manages organization setup, departments, categories, employee roles, and all asset workflows.
+- `Asset Manager` manages assets, allocations, bookings, maintenance, transfers, audits, and reports.
+- `Department Head` can participate in workflow approvals where applicable.
+- `Employee` can sign up, log in, book resources, raise maintenance requests, request transfers, and view relevant operational data.
+
+Admins cannot demote or deactivate their own account from the Admin screen, which prevents losing access to organization management.
 
 ## Requirements
 
@@ -82,6 +99,16 @@ Create the organization and its first Admin account there. `/setup` remains avai
 
 Normal `/signup` creates Employee accounts only. Employees choose the organization they are joining; Admins promote roles from `/app/admin`.
 
+## Core Workflows
+
+1. Create an organization from `/setup`.
+2. Log in as the organization Admin.
+3. Add departments and asset categories from `/app/admin`.
+4. Register assets from `/app/assets`.
+5. Create employee accounts from `/signup`.
+6. Promote employees or assign departments from `/app/admin`.
+7. Allocate assets, book resources, raise maintenance requests, request transfers, and run audits from the app modules.
+
 ## App Routes
 
 - `/` - landing page
@@ -120,10 +147,3 @@ src/app/app/components/   Shared app shell and form UI
 src/lib/                  Database, auth, session, password, and activity helpers
 src/lib/data.js           PostgreSQL query helpers
 ```
-
-## Deployment Notes
-
-- Configure `DATABASE_URL` and `AUTH_SECRET` in the hosting provider.
-- Use Node.js 20.19 or newer.
-- Run `npm run build` during deployment.
-- Create each organization through `/setup`; normal signup joins an existing organization as an Employee.
