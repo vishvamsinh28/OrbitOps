@@ -75,52 +75,74 @@ export default async function AdminPage() {
           Employee directory
         </h2>
         <div className="mt-5 grid gap-4">
-          {users.map((employee) => (
-            <form
-              key={employee._id}
-              action={updateEmployeeAction}
-              className="grid gap-3 border-b border-white/10 pb-4 min-[900px]:grid-cols-[1fr_180px_180px_120px_auto]"
-            >
-              <input type="hidden" name="employeeId" value={employee._id} />
-              <div>
-                <p className="font-medium">{employee.name}</p>
-                <p className="text-sm text-[#8B98B4]">{employee.email}</p>
-              </div>
-              <SelectField name="role" label="Role" defaultValue={employee.role}>
-                {Object.values(ROLES).map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                name="department"
-                label="Department"
-                defaultValue={employee.department?._id || ""}
+          {users.map((employee) => {
+            const isCurrentUser = employee._id === user._id;
+
+            return (
+              <form
+                key={employee._id}
+                action={updateEmployeeAction}
+                className="grid gap-3 border-b border-white/10 pb-4 min-[900px]:grid-cols-[1fr_180px_180px_120px_auto]"
               >
-                <option value="">None</option>
-                {departments.map((department) => (
-                  <option key={department._id} value={department._id}>
-                    {department.name}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                name="status"
-                label="Status"
-                defaultValue={employee.status}
-              >
-                {["Active", "Inactive"].map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </SelectField>
-              <div className="self-end">
-                <SubmitButton>Save</SubmitButton>
-              </div>
-            </form>
-          ))}
+                <input type="hidden" name="employeeId" value={employee._id} />
+                <div>
+                  <p className="font-medium">{employee.name}</p>
+                  <p className="text-sm text-[#8B98B4]">{employee.email}</p>
+                </div>
+                {isCurrentUser ? (
+                  <label className="grid gap-2 text-sm text-[#8B98B4]">
+                    Role
+                    <span className="rounded-md border border-[rgba(148,168,210,0.2)] bg-[#0D1220]/70 px-3 py-2.5 text-[#E9EDF6]">
+                      {employee.role}
+                    </span>
+                  </label>
+                ) : (
+                  <SelectField name="role" label="Role" defaultValue={employee.role}>
+                    {Object.values(ROLES).map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </SelectField>
+                )}
+                <SelectField
+                  name="department"
+                  label="Department"
+                  defaultValue={employee.department?._id || ""}
+                >
+                  <option value="">None</option>
+                  {departments.map((department) => (
+                    <option key={department._id} value={department._id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </SelectField>
+                {isCurrentUser ? (
+                  <label className="grid gap-2 text-sm text-[#8B98B4]">
+                    Status
+                    <span className="rounded-md border border-[rgba(148,168,210,0.2)] bg-[#0D1220]/70 px-3 py-2.5 text-[#E9EDF6]">
+                      {employee.status}
+                    </span>
+                  </label>
+                ) : (
+                  <SelectField
+                    name="status"
+                    label="Status"
+                    defaultValue={employee.status}
+                  >
+                    {["Active", "Inactive"].map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </SelectField>
+                )}
+                <div className="self-end">
+                  <SubmitButton>Save</SubmitButton>
+                </div>
+              </form>
+            );
+          })}
         </div>
       </Panel>
 
