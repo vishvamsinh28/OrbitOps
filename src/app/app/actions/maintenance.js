@@ -3,16 +3,19 @@
 import { revalidatePath } from "next/cache";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import {
+  createMaintenanceRequest,
+  updateAssetHolder,
+  updateMaintenanceRequest,
+} from "@/lib/data";
 import { logActivity } from "@/lib/activity";
-import Asset from "@/models/Asset";
-import MaintenanceRequest from "@/models/MaintenanceRequest";
 import { value } from "./shared";
 
 export async function createMaintenanceAction(formData) {
   const user = await requireUser();
   await connectDB();
 
-  const request = await MaintenanceRequest.create({
+  const request = await createMaintenanceRequest({
     asset: value(formData, "asset"),
     issueDescription: value(formData, "issueDescription"),
     priority: value(formData, "priority") || "Medium",
@@ -37,24 +40,22 @@ export async function updateMaintenanceAction(formData) {
 
   await connectDB();
 
-  const request = await MaintenanceRequest.findById(
-    value(formData, "request"),
-  );
+  const request = await updateMaintenanceRequest({
+    requestId: value(formData, "request"),
+    status: value(formData, "status"),
+    technician: value(formData, "technician"),
+    resolutionNotes: value(formData, "resolutionNotes"),
+  });
   if (!request) return;
 
-  request.status = value(formData, "status") || request.status;
-  request.assignedTechnicianName = value(formData, "technician");
-  request.resolutionNotes = value(formData, "resolutionNotes");
-  await request.save();
-
   if (request.status === "Approved") {
-    await Asset.findByIdAndUpdate(request.asset, {
+    await updateAssetHolder(request.asset, {
       status: "Under Maintenance",
     });
   }
 
   if (request.status === "Resolved") {
-    await Asset.findByIdAndUpdate(request.asset, { status: "Available" });
+    await updateAssetHolder(request.asset, { status: "Available" });
   }
 
   await logActivity({

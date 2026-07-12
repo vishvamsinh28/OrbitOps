@@ -3,11 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import {
+  activeHolderExists,
+  createAllocation,
+  createAsset,
+  getAssetById,
+  returnAllocation,
+  updateAssetHolder,
+} from "@/lib/data";
 import { logActivity, notifyUser } from "@/lib/activity";
-import Allocation from "@/models/Allocation";
-import Asset from "@/models/Asset";
-import Department from "@/models/Department";
-import User from "@/models/User";
 import { nextAssetTag, value } from "./shared";
 
 export async function registerAssetAction(formData) {
@@ -16,7 +20,7 @@ export async function registerAssetAction(formData) {
 
   await connectDB();
 
-  const asset = await Asset.create({
+  const asset = await createAsset({
     name: value(formData, "name"),
     assetTag: await nextAssetTag(),
     category: value(formData, "category"),
@@ -49,19 +53,17 @@ export async function allocateAssetAction(formData) {
 
   await connectDB();
 
-  const asset = await Asset.findById(value(formData, "asset"));
+  const asset = await getAssetById(value(formData, "asset"));
   if (!asset || asset.status !== "Available") return;
 
   const holderType = value(formData, "holderType");
   const holder = value(formData, "holder");
   const holderExists =
-    holderType === "User"
-      ? await User.exists({ _id: holder, status: "Active" })
-      : await Department.exists({ _id: holder, status: "Active" });
+    await activeHolderExists(holderType, holder);
 
   if (!holderExists) return;
 
-  await Allocation.create({
+  await createAllocation({
     asset: asset._id,
     holderType,
     holder,
@@ -71,10 +73,11 @@ export async function allocateAssetAction(formData) {
     notes: value(formData, "notes"),
   });
 
-  asset.status = "Allocated";
-  asset.currentHolderType = holderType;
-  asset.currentHolder = holder;
-  await asset.save();
+  await updateAssetHolder(asset._id, {
+    status: "Allocated",
+    holderType,
+    holder,
+  });
 
   await logActivity({
     actor: user._id,
@@ -103,18 +106,16 @@ export async function returnAssetAction(formData) {
 
   await connectDB();
 
-  const allocation = await Allocation.findById(value(formData, "allocation"));
-  if (!allocation || allocation.status !== "Active") return;
+  const allocation = await returnAllocation({
+    allocationId: value(formData, "allocation"),
+    conditionNotes: value(formData, "conditionNotes"),
+  });
+  if (!allocation) return;
 
-  allocation.status = "Returned";
-  allocation.returnDate = new Date();
-  allocation.conditionNotes = value(formData, "conditionNotes");
-  await allocation.save();
-
-  await Asset.findByIdAndUpdate(allocation.asset, {
+  await updateAssetHolder(allocation.asset, {
     status: "Available",
-    currentHolderType: null,
-    currentHolder: null,
+    holderType: null,
+    holder: null,
   });
 
   await logActivity({

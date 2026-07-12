@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { connectDB } from "./db";
+import { getUserById } from "./data";
 import { getSessionUserId } from "./session";
-import User from "@/models/User";
 
 export const ROLES = {
   ADMIN: "Admin",
@@ -15,16 +14,11 @@ export async function getCurrentUser() {
 
   if (!userId) return null;
 
-  await connectDB();
-
-  const user = await User.findById(userId)
-    .select("-passwordHash")
-    .populate("department", "name")
-    .lean();
+  const user = await getUserById(userId);
 
   if (!user || user.status !== "Active") return null;
 
-  return JSON.parse(JSON.stringify(user));
+  return user;
 }
 
 export async function requireUser() {

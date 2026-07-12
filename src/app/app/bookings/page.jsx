@@ -1,25 +1,19 @@
 import { PageHeader } from "../components/PageHeader";
 import { Panel } from "../components/Panel";
 import { SelectField, SubmitButton, TextField } from "../components/FormControls";
+<<<<<<< HEAD
 import { cancelBookingAction, createBookingAction } from "../actions/bookings";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Asset from "@/models/Asset";
 import Booking from "@/models/Booking";
+=======
+import { createBookingAction } from "../actions/bookings";
+import { listBookingData } from "@/lib/data";
+>>>>>>> 39aa180 (chore: swithc to postgres)
 
 async function getBookingData() {
-  await connectDB();
-
-  const [resources, bookings] = await Promise.all([
-    Asset.find({ isBookable: true }).sort({ name: 1 }).lean(),
-    Booking.find()
-      .sort({ start: 1 })
-      .populate("asset", "name assetTag")
-      .populate("bookedBy", "name")
-      .lean(),
-  ]);
-
-  return JSON.parse(JSON.stringify({ resources, bookings }));
+  return listBookingData();
 }
 
 export default async function BookingsPage() {
@@ -30,7 +24,7 @@ export default async function BookingsPage() {
   return (
     <>
       <PageHeader eyebrow="Resource booking" title="Bookings">
-        Create reservations with MongoDB overlap validation.
+        Create reservations with PostgreSQL overlap validation.
       </PageHeader>
 
       <div className="grid gap-6 min-[961px]:grid-cols-[0.7fr_1fr]">

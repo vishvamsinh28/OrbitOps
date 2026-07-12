@@ -1,13 +1,13 @@
 # OrbitOps
 
-OrbitOps is a MongoDB-backed asset and operations management MVP built with Next.js. It combines employee onboarding, asset registration, allocation, bookings, maintenance, transfers, notifications, activity logs, and audit-ready records in one system of record.
+OrbitOps is a PostgreSQL-backed asset and operations management MVP built with Next.js. It combines employee onboarding, asset registration, allocation, bookings, maintenance, transfers, notifications, activity logs, and audit-ready records in one system of record.
 
 ## Tech Stack
 
 - Next.js 16 App Router
 - React 19
 - Tailwind CSS 4
-- MongoDB with Mongoose
+- PostgreSQL with `pg`
 - Cookie-based server-side auth
 
 ## Features
@@ -24,7 +24,7 @@ OrbitOps is a MongoDB-backed asset and operations management MVP built with Next
 
 - Node.js 20.19 or newer
 - npm
-- MongoDB Atlas or a local MongoDB database
+- PostgreSQL, such as a local Homebrew Postgres service
 
 ## Environment
 
@@ -37,7 +37,7 @@ cp .env.example .env
 Set these values:
 
 ```bash
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/orbitops
+DATABASE_URL=postgres://localhost:5432/orbitops
 AUTH_SECRET=replace-with-a-long-random-secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -105,12 +105,12 @@ src/app/components/       Landing page components
 src/app/app/actions/      Server actions for protected workflows
 src/app/app/components/   Shared app shell and form UI
 src/lib/                  Database, auth, session, password, and activity helpers
-src/models/               Mongoose models
+src/lib/data.js           PostgreSQL query helpers
 ```
 
 ## Deployment Notes
 
-- Configure `MONGODB_URI` and `AUTH_SECRET` in the hosting provider.
+- Configure `DATABASE_URL` and `AUTH_SECRET` in the hosting provider.
 - Use Node.js 20.19 or newer.
 - Run `npm run build` during deployment.
 - Bootstrap the first Admin on the target database before wider access.

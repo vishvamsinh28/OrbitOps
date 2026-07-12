@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
-import User from "@/models/User";
+import { adminExists } from "@/lib/data";
 import { SetupForm } from "./SetupForm";
 
 export const dynamic = "force-dynamic";
@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function SetupPage() {
   await connectDB();
 
-  const adminExists = await User.exists({ role: "Admin" });
-  if (adminExists) redirect("/login");
+  if (await adminExists()) redirect("/login");
 
   return (
     <main className="flex min-h-screen items-center justify-center px-5 py-12">

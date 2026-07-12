@@ -7,35 +7,10 @@ import {
   returnAssetAction,
 } from "../actions/assets";
 import { canManageAssets, requireUser } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import Allocation from "@/models/Allocation";
-import Asset from "@/models/Asset";
-import AssetCategory from "@/models/AssetCategory";
-import Department from "@/models/Department";
-import User from "@/models/User";
+import { listAssetsData } from "@/lib/data";
 
 async function getAssetsData() {
-  await connectDB();
-
-  const [assets, categories, departments, users, allocations] =
-    await Promise.all([
-      Asset.find()
-        .sort({ createdAt: -1 })
-        .populate("category", "name")
-        .populate("department", "name")
-        .lean(),
-      AssetCategory.find({ status: "Active" }).sort({ name: 1 }).lean(),
-      Department.find({ status: "Active" }).sort({ name: 1 }).lean(),
-      User.find({ status: "Active" }).sort({ name: 1 }).lean(),
-      Allocation.find({ status: "Active" })
-        .sort({ createdAt: -1 })
-        .populate("asset", "name assetTag")
-        .lean(),
-    ]);
-
-  return JSON.parse(
-    JSON.stringify({ assets, categories, departments, users, allocations }),
-  );
+  return listAssetsData();
 }
 
 export default async function AssetsPage() {

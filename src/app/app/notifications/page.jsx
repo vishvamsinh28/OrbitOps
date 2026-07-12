@@ -2,16 +2,11 @@ import { PageHeader } from "../components/PageHeader";
 import { Panel } from "../components/Panel";
 import { markNotificationReadAction } from "../actions/notifications";
 import { requireUser } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import Notification from "@/models/Notification";
+import { listNotifications } from "@/lib/data";
 
 export default async function NotificationsPage() {
   const user = await requireUser();
-  await connectDB();
-
-  const notifications = await Notification.find({ user: user._id })
-    .sort({ createdAt: -1 })
-    .lean();
+  const notifications = await listNotifications(user._id);
   const serialized = JSON.parse(JSON.stringify(notifications));
 
   return (

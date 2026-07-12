@@ -6,23 +6,10 @@ import {
   updateMaintenanceAction,
 } from "../actions/maintenance";
 import { canManageAssets, requireUser } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import Asset from "@/models/Asset";
-import MaintenanceRequest from "@/models/MaintenanceRequest";
+import { listMaintenanceData } from "@/lib/data";
 
 async function getMaintenanceData() {
-  await connectDB();
-
-  const [assets, requests] = await Promise.all([
-    Asset.find().sort({ assetTag: 1 }).lean(),
-    MaintenanceRequest.find()
-      .sort({ createdAt: -1 })
-      .populate("asset", "name assetTag")
-      .populate("requestedBy", "name")
-      .lean(),
-  ]);
-
-  return JSON.parse(JSON.stringify({ assets, requests }));
+  return listMaintenanceData();
 }
 
 export default async function MaintenancePage() {

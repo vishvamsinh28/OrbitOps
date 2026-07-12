@@ -6,29 +6,10 @@ import {
   decideTransferAction,
 } from "../actions/transfers";
 import { canManageAssets, requireUser, ROLES } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import Asset from "@/models/Asset";
-import Department from "@/models/Department";
-import TransferRequest from "@/models/TransferRequest";
-import User from "@/models/User";
+import { listTransferData } from "@/lib/data";
 
 async function getTransferData() {
-  await connectDB();
-
-  const [assets, users, departments, transfers] = await Promise.all([
-    Asset.find({ status: { $in: ["Allocated", "Available"] } })
-      .sort({ assetTag: 1 })
-      .lean(),
-    User.find({ status: "Active" }).sort({ name: 1 }).lean(),
-    Department.find({ status: "Active" }).sort({ name: 1 }).lean(),
-    TransferRequest.find()
-      .sort({ createdAt: -1 })
-      .populate("asset", "name assetTag status")
-      .populate("requestedBy", "name")
-      .lean(),
-  ]);
-
-  return JSON.parse(JSON.stringify({ assets, users, departments, transfers }));
+  return listTransferData();
 }
 
 export default async function TransfersPage() {

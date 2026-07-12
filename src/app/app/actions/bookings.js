@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import {
+  bookingOverlaps,
+  createBooking,
+  getAssetById,
+} from "@/lib/data";
 import { logActivity } from "@/lib/activity";
-import Asset from "@/models/Asset";
-import Booking from "@/models/Booking";
 import { value } from "./shared";
 
 export async function createBookingAction(formData) {
@@ -25,19 +28,14 @@ export async function createBookingAction(formData) {
     return;
   }
 
-  const asset = await Asset.findById(assetId);
+  const asset = await getAssetById(assetId);
   if (!asset?.isBookable) return;
 
-  const overlap = await Booking.findOne({
-    asset: assetId,
-    status: { $ne: "Cancelled" },
-    start: { $lt: end },
-    end: { $gt: start },
-  });
+  const overlap = await bookingOverlaps({ asset: assetId, start, end });
 
   if (overlap) return;
 
-  const booking = await Booking.create({
+  const booking = await createBooking({
     asset: assetId,
     bookedBy: user._id,
     start,

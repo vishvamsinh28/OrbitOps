@@ -1,5 +1,4 @@
-import ActivityLog from "@/models/ActivityLog";
-import Notification from "@/models/Notification";
+import { createActivityLog, createNotification } from "./data";
 
 export async function logActivity({
   actor,
@@ -10,7 +9,7 @@ export async function logActivity({
   previousValue,
   newValue,
 }) {
-  return ActivityLog.create({
+  return createActivityLog({
     actor,
     action,
     entityType,
@@ -24,7 +23,7 @@ export async function logActivity({
 export async function notifyUser({ user, title, message, href }) {
   if (!user) return null;
 
-  return Notification.create({
+  return createNotification({
     user,
     title,
     message,

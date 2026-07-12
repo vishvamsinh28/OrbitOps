@@ -3,30 +3,32 @@
 import { revalidatePath } from "next/cache";
 import { canManageAssets, requireUser, ROLES } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import {
+  activeHolderExists,
+  completeTransfer,
+  createTransferRequest,
+  decideTransfer,
+  getAssetById,
+  getTransferById,
+  updateAssetHolder,
+} from "@/lib/data";
 import { logActivity } from "@/lib/activity";
-import Asset from "@/models/Asset";
-import Department from "@/models/Department";
-import TransferRequest from "@/models/TransferRequest";
-import User from "@/models/User";
 import { value } from "./shared";
 
 export async function createTransferAction(formData) {
   const user = await requireUser();
   await connectDB();
 
-  const asset = await Asset.findById(value(formData, "asset"));
+  const asset = await getAssetById(value(formData, "asset"));
   if (!asset) return;
 
   const toHolderType = value(formData, "toHolderType");
   const toHolder = value(formData, "toHolder");
-  const holderExists =
-    toHolderType === "User"
-      ? await User.exists({ _id: toHolder, status: "Active" })
-      : await Department.exists({ _id: toHolder, status: "Active" });
+  const holderExists = await activeHolderExists(toHolderType, toHolder);
 
   if (!holderExists) return;
 
-  const transfer = await TransferRequest.create({
+  const transfer = await createTransferRequest({
     asset: asset._id,
     requestedBy: user._id,
     fromHolderType: asset.currentHolderType,
@@ -55,23 +57,25 @@ export async function decideTransferAction(formData) {
 
   await connectDB();
 
-  const transfer = await TransferRequest.findById(value(formData, "transfer"));
-  if (!transfer || transfer.status !== "Requested") return;
+  const existingTransfer = await getTransferById(value(formData, "transfer"));
+  if (!existingTransfer || existingTransfer.status !== "Requested") return;
 
-  const decision = value(formData, "decision");
-  transfer.status = decision === "approve" ? "Approved" : "Rejected";
-  transfer.decisionNotes = value(formData, "decisionNotes");
-  transfer.approvedBy = user._id;
-  await transfer.save();
+  const transfer = await decideTransfer({
+    transferId: value(formData, "transfer"),
+    status: value(formData, "decision") === "approve" ? "Approved" : "Rejected",
+    notes: value(formData, "decisionNotes"),
+    approvedBy: user._id,
+  });
+  if (!transfer) return;
 
   if (transfer.status === "Approved") {
-    await Asset.findByIdAndUpdate(transfer.asset, {
+    await updateAssetHolder(transfer.asset, {
       status: "Allocated",
-      currentHolderType: transfer.toHolderType,
-      currentHolder: transfer.toHolder,
+      holderType: transfer.toHolderType,
+      holder: transfer.toHolder,
     });
+    await completeTransfer(transfer._id);
     transfer.status = "Completed";
-    await transfer.save();
   }
 
   await logActivity({

@@ -2,10 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
+import { adminExists, createUser } from "@/lib/data";
 import { hashPassword } from "@/lib/password";
 import { setSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
-import User from "@/models/User";
 
 export async function createFirstAdminAction(_prevState, formData) {
   const name = String(formData.get("name") || "").trim();
@@ -20,10 +20,9 @@ export async function createFirstAdminAction(_prevState, formData) {
 
   await connectDB();
 
-  const adminExists = await User.exists({ role: "Admin" });
-  if (adminExists) return { error: "An Admin already exists." };
+  if (await adminExists()) return { error: "An Admin already exists." };
 
-  const admin = await User.create({
+  const admin = await createUser({
     name,
     email,
     passwordHash: await hashPassword(password),

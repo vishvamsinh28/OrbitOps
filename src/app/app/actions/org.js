@@ -3,10 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { canManageOrg, requireUser, ROLES } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { createCategory, createDepartment, updateEmployee } from "@/lib/data";
 import { logActivity } from "@/lib/activity";
-import AssetCategory from "@/models/AssetCategory";
-import Department from "@/models/Department";
-import User from "@/models/User";
 import { value } from "./shared";
 
 export async function createDepartmentAction(formData) {
@@ -15,7 +13,7 @@ export async function createDepartmentAction(formData) {
 
   await connectDB();
 
-  const department = await Department.create({
+  const department = await createDepartment({
     name: value(formData, "name"),
     parent: value(formData, "parent") || undefined,
     head: value(formData, "head") || undefined,
@@ -38,7 +36,7 @@ export async function createCategoryAction(formData) {
 
   await connectDB();
 
-  const category = await AssetCategory.create({
+  const category = await createCategory({
     name: value(formData, "name"),
   });
 
@@ -60,15 +58,12 @@ export async function updateEmployeeAction(formData) {
 
   await connectDB();
 
-  const updatedUser = await User.findByIdAndUpdate(
-    value(formData, "employeeId"),
-    {
-      role: value(formData, "role") || ROLES.EMPLOYEE,
-      department: value(formData, "department") || undefined,
-      status: value(formData, "status") || "Active",
-    },
-    { new: true },
-  );
+  const updatedUser = await updateEmployee({
+    employeeId: value(formData, "employeeId"),
+    role: value(formData, "role") || ROLES.EMPLOYEE,
+    department: value(formData, "department"),
+    status: value(formData, "status") || "Active",
+  });
 
   await logActivity({
     actor: user._id,

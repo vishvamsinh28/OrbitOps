@@ -7,21 +7,10 @@ import {
   updateEmployeeAction,
 } from "../actions/org";
 import { requireRole, ROLES } from "@/lib/auth";
-import { connectDB } from "@/lib/db";
-import AssetCategory from "@/models/AssetCategory";
-import Department from "@/models/Department";
-import User from "@/models/User";
+import { listAdminData } from "@/lib/data";
 
 async function getAdminData() {
-  await connectDB();
-
-  const [departments, categories, users] = await Promise.all([
-    Department.find().sort({ name: 1 }).populate("head", "name").lean(),
-    AssetCategory.find().sort({ name: 1 }).lean(),
-    User.find().sort({ createdAt: -1 }).populate("department", "name").lean(),
-  ]);
-
-  return JSON.parse(JSON.stringify({ departments, categories, users }));
+  return listAdminData();
 }
 
 export default async function AdminPage() {

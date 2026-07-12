@@ -2,10 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
+import { createUser, getUserByEmail } from "@/lib/data";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { setSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
-import User from "@/models/User";
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -24,10 +24,10 @@ export async function signupAction(_prevState, formData) {
 
   await connectDB();
 
-  const existingUser = await User.findOne({ email });
+  const existingUser = await getUserByEmail(email);
   if (existingUser) return { error: "That email is already registered." };
 
-  const user = await User.create({
+  const user = await createUser({
     name,
     email,
     passwordHash: await hashPassword(password),
@@ -56,7 +56,7 @@ export async function loginAction(_prevState, formData) {
 
   await connectDB();
 
-  const user = await User.findOne({ email });
+  const user = await getUserByEmail(email);
   const validPassword =
     user && (await verifyPassword(password, user.passwordHash));
 

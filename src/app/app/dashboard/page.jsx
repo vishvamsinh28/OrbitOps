@@ -1,68 +1,10 @@
 import { PageHeader } from "../components/PageHeader";
 import { Panel } from "../components/Panel";
-import { connectDB } from "@/lib/db";
-import ActivityLog from "@/models/ActivityLog";
-import Allocation from "@/models/Allocation";
-import Asset from "@/models/Asset";
-import Booking from "@/models/Booking";
-import MaintenanceRequest from "@/models/MaintenanceRequest";
-import TransferRequest from "@/models/TransferRequest";
 import { getQuickActions, requireUser } from "@/lib/auth";
+import { listDashboardData } from "@/lib/data";
 
 async function getDashboardData() {
-  await connectDB();
-
-  const now = new Date();
-  const [
-    totalAssets,
-    availableAssets,
-    allocatedAssets,
-    maintenanceAssets,
-    activeBookings,
-    pendingTransfers,
-    upcomingReturns,
-    overdueReturns,
-    recentActivity,
-  ] = await Promise.all([
-    Asset.countDocuments(),
-    Asset.countDocuments({ status: "Available" }),
-    Asset.countDocuments({ status: "Allocated" }),
-    Asset.countDocuments({ status: "Under Maintenance" }),
-    Booking.countDocuments({
-      status: { $in: ["Upcoming", "Ongoing"] },
-      end: { $gte: now },
-    }),
-    TransferRequest.countDocuments({ status: "Requested" }),
-    Allocation.countDocuments({
-      status: "Active",
-      expectedReturnDate: { $gte: now },
-    }),
-    Allocation.countDocuments({
-      status: "Active",
-      expectedReturnDate: { $lt: now },
-    }),
-    ActivityLog.find()
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .populate("actor", "name")
-      .lean(),
-  ]);
-
-  return JSON.parse(
-    JSON.stringify({
-      stats: [
-        ["Total assets", totalAssets],
-        ["Available assets", availableAssets],
-        ["Allocated assets", allocatedAssets],
-        ["Under maintenance", maintenanceAssets],
-        ["Active bookings", activeBookings],
-        ["Pending transfers", pendingTransfers],
-        ["Upcoming returns", upcomingReturns],
-        ["Overdue returns", overdueReturns],
-      ],
-      recentActivity,
-    }),
-  );
+  return listDashboardData();
 }
 
 export default async function DashboardPage() {
