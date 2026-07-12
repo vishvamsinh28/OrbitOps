@@ -3,7 +3,7 @@ export const modules = [
     id: "01",
     icon: "user",
     title: "Login & signup",
-    body: "Every signup creates an employee account only — elevated roles can only be granted later, from the directory, never chosen at signup.",
+    body: "New users always join as employees, while elevated roles are assigned later through the employee directory.",
   },
   {
     id: "02",
