@@ -21,7 +21,7 @@ export const modules = [
     id: "04",
     icon: "tag",
     title: "Asset registry",
-    body: "Register assets with auto-generated tags, search by tag, serial, or QR code, and see allocation and maintenance history in one record.",
+    body:  "Register assets with generated tags, then search by tag, serial number, or QR code from one central registry.",
   },
   {
     id: "05",
