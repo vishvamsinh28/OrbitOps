@@ -7,6 +7,8 @@ export async function listDashboardData() {
     query("select count(*) from assets where status = 'Available'"),
     query("select count(*) from assets where status = 'Allocated'"),
     query("select count(*) from assets where status = 'Under Maintenance'"),
+    query("select count(*) from assets where status = 'Reserved'"),
+    query("select count(*) from assets where status in ('Lost','Retired','Disposed')"),
     query("select count(*) from bookings where status in ('Upcoming','Ongoing') and end_at >= $1", [now]),
     query("select count(*) from transfer_requests where status = 'Requested'"),
     query("select count(*) from allocations where status = 'Active' and expected_return_date >= $1", [now]),
@@ -19,15 +21,17 @@ export async function listDashboardData() {
   return {
     stats: [
       ["Total assets", count(0)],
-      ["Available assets", count(1)],
-      ["Allocated assets", count(2)],
+      ["Available", count(1)],
+      ["Allocated", count(2)],
       ["Under maintenance", count(3)],
-      ["Active bookings", count(4)],
-      ["Pending transfers", count(5)],
-      ["Upcoming returns", count(6)],
-      ["Overdue returns", count(7)],
+      ["Reserved", count(4)],
+      ["Lost / Retired / Disposed", count(5)],
+      ["Active bookings", count(6)],
+      ["Pending transfers", count(7)],
+      ["Upcoming returns", count(8)],
+      ["Overdue returns", count(9)],
     ],
-    recentActivity: result[8].rows.map((row) => ({
+    recentActivity: result[10].rows.map((row) => ({
       _id: row._id,
       action: row.action,
       description: row.description,
