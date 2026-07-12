@@ -2,7 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
-import { createOrganization, createUser } from "@/lib/data";
+import {
+  createInitialOrganizationAdmin,
+  getUserByEmail,
+  hasUsers,
+} from "@/lib/data";
 import { hashPassword } from "@/lib/password";
 import { setSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
@@ -22,15 +26,35 @@ export async function createFirstAdminAction(_prevState, formData) {
 
   await connectDB();
 
-  const organization = await createOrganization({ name: organizationName });
+  if (await hasUsers()) {
+    return { error: "Setup is already complete. Log in to continue." };
+  }
 
-  const admin = await createUser({
-    name,
-    email,
-    passwordHash: await hashPassword(password),
-    role: "Admin",
-    organizationId: organization._id,
-  });
+  if (await getUserByEmail(email)) {
+    return { error: "That email is already registered." };
+  }
+
+  let setup;
+  try {
+    setup = await createInitialOrganizationAdmin({
+      organizationName,
+      name,
+      email,
+      passwordHash: await hashPassword(password),
+    });
+  } catch (error) {
+    if (error?.code === "23505") {
+      return { error: "That email is already registered." };
+    }
+
+    throw error;
+  }
+
+  if (!setup) {
+    return { error: "Setup is already complete. Log in to continue." };
+  }
+
+  const { organization, admin } = setup;
 
   await logActivity({
     organization: organization._id,

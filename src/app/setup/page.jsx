@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
+import { hasUsers } from "@/lib/data";
 import { SetupForm } from "./SetupForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function SetupPage() {
   await connectDB();
+
+  if (await hasUsers()) {
+    redirect("/login");
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-5 py-12">

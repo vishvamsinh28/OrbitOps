@@ -1,4 +1,4 @@
-import { query } from "../db";
+import { connectDB, query } from "../db";
 import { exists, id, one, userRow } from "./shared";
 
 export async function getUserById(userId) {
@@ -37,6 +37,60 @@ export async function listAdminUsers(organizationId) {
     [organizationId],
   );
   return result.rows.map(userRow);
+}
+
+export async function hasUsers() {
+  return exists(await query("select count(*) from users"));
+}
+
+export async function createInitialOrganizationAdmin({
+  organizationName,
+  name,
+  email,
+  passwordHash,
+}) {
+  const pool = await connectDB();
+  const client = await pool.connect();
+
+  try {
+    await client.query("begin");
+    await client.query("select pg_advisory_xact_lock(hashtext('orbitops_setup'))");
+
+    const users = await client.query("select count(*) from users");
+    if (exists(users)) {
+      await client.query("rollback");
+      return null;
+    }
+
+    const organizationId = id();
+    const organization = one(
+      await client.query(
+        `insert into organizations (id, name)
+         values ($1, $2) returning id as "_id", name`,
+        [organizationId, organizationName],
+      ),
+    );
+
+    const admin = userRow(
+      one(
+        await client.query(
+          `insert into users (id, name, email, password_hash, role, organization_id)
+           values ($1, $2, $3, $4, 'Admin', $5)
+           returning id as "_id", name, email, password_hash as "passwordHash",
+            role, status, organization_id as "organizationId"`,
+          [id(), name, email, passwordHash, organizationId],
+        ),
+      ),
+    );
+
+    await client.query("commit");
+    return { organization, admin };
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function createOrganization({ name }) {
