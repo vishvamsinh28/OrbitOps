@@ -6,6 +6,7 @@ import {
   registerAssetAction,
   returnAssetAction,
 } from "../actions/assets";
+import { AssetFilter } from "../components/AssetFilter";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { listAssetsData } from "@/lib/data";
 
@@ -118,39 +119,8 @@ export default async function AssetsPage() {
         <h2 className="font-display text-xl font-semibold">
           Asset directory
         </h2>
-        <div className="mt-5 grid gap-4">
-          {assets.map((asset) => (
-            <article
-              key={asset._id}
-              className="grid gap-2 border-b border-white/10 pb-4 min-[760px]:grid-cols-[1fr_auto]"
-            >
-              <div>
-                <p className="font-medium">
-                  {asset.assetTag} — {asset.name}
-                </p>
-                <p className="text-sm text-[#8B98B4]">
-                  {asset.category?.name || "Uncategorized"} · {asset.status} ·{" "}
-                  {asset.location || "No location"}
-                </p>
-              </div>
-              <div className="flex items-start gap-2">
-                {canManage ? (
-                  <a
-                    href={`/app/assets/${asset._id}/edit`}
-                    className="rounded-md border border-white/10 px-3 py-1 font-mono text-xs text-[#8B98B4] hover:text-[#E9EDF6]"
-                  >
-                    Edit
-                  </a>
-                ) : null}
-                <span className="self-start rounded-md border border-white/10 px-3 py-1 font-mono text-xs text-[#8B98B4]">
-                  {asset.isBookable ? "Bookable" : "Asset"}
-                </span>
-              </div>
-            </article>
-          ))}
-          {assets.length === 0 ? (
-            <p className="text-sm text-[#8B98B4]">No assets registered.</p>
-          ) : null}
+        <div className="mt-5">
+          <AssetFilter assets={assets} categories={categories} canManage={canManage} />
         </div>
       </Panel>
 
