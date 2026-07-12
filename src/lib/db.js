@@ -27,7 +27,10 @@ export async function query(text, params = []) {
 
 export async function connectDB() {
   if (!schemaReady) {
-    schemaReady = ensureSchema();
+    schemaReady = ensureSchema().catch((err) => {
+      schemaReady = undefined;
+      throw err;
+    });
   }
 
   await schemaReady;
