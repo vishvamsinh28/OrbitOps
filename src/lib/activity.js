@@ -1,6 +1,7 @@
 import { createActivityLog, createNotification } from "./data";
 
 export async function logActivity({
+  organization,
   actor,
   action,
   entityType,
@@ -11,6 +12,7 @@ export async function logActivity({
 }) {
   return createActivityLog({
     actor,
+    organization,
     action,
     entityType,
     entityId,

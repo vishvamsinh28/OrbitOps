@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import {
@@ -13,6 +14,7 @@ import {
   updateAssetHolder,
 } from "@/lib/data";
 import { logActivity, notifyUser } from "@/lib/activity";
+import { saveLocalUpload } from "@/lib/uploads";
 import { nextAssetTag, value } from "./shared";
 
 export async function registerAssetAction(formData) {
@@ -20,8 +22,11 @@ export async function registerAssetAction(formData) {
   if (!canManageAssets(user.role)) return;
 
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
   const asset = await createAsset({
+    organizationId,
     name: value(formData, "name"),
     assetTag: await nextAssetTag(),
     category: value(formData, "category"),
@@ -32,7 +37,12 @@ export async function registerAssetAction(formData) {
     location: value(formData, "location"),
     department: value(formData, "department") || undefined,
     description: value(formData, "description"),
-    imageUrl: value(formData, "imageUrl"),
+    imageUrl:
+      (await saveLocalUpload(formData.get("imageFile"), organizationId)) ||
+      value(formData, "imageUrl"),
+    documentUrl:
+      (await saveLocalUpload(formData.get("documentFile"), organizationId)) ||
+      value(formData, "documentUrl"),
     isBookable: formData.get("isBookable") === "on",
   });
 
@@ -54,18 +64,25 @@ export async function allocateAssetAction(formData) {
 
   await connectDB();
 
-  const asset = await getAssetById(value(formData, "asset"));
-  if (!asset || asset.status !== "Available") return;
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
+
+  const asset = await getAssetById(value(formData, "asset"), organizationId);
+  if (!asset) return;
+  if (asset.status !== "Available") {
+    redirect(`/app/assets?blocked=${asset._id}`);
+  }
 
   const holderType = value(formData, "holderType");
   const holder = value(formData, "holder");
   const holderExists =
-    await activeHolderExists(holderType, holder);
+    await activeHolderExists(holderType, holder, organizationId);
 
   if (!holderExists) return;
 
   await createAllocation({
     asset: asset._id,
+    organizationId,
     holderType,
     holder,
     allocatedBy: user._id,
@@ -78,6 +95,7 @@ export async function allocateAssetAction(formData) {
     status: "Allocated",
     holderType,
     holder,
+    organizationId,
   });
 
   await logActivity({
@@ -91,6 +109,7 @@ export async function allocateAssetAction(formData) {
   if (holderType === "User") {
     await notifyUser({
       user: holder,
+      organization: organizationId,
       title: "Asset assigned",
       message: `${asset.assetTag} was assigned to you.`,
       href: "/app/assets",
@@ -104,6 +123,8 @@ export async function allocateAssetAction(formData) {
 export async function returnAssetAction(formData) {
   const user = await requireUser();
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
   if (!canManageAssets(user.role)) {
     // Allow asset holder to initiate return
@@ -136,6 +157,7 @@ export async function returnAssetAction(formData) {
   const allocation = await returnAllocation({
     allocationId: value(formData, "allocation"),
     conditionNotes: value(formData, "conditionNotes"),
+    organizationId,
   });
   if (!allocation) return;
 
@@ -143,6 +165,7 @@ export async function returnAssetAction(formData) {
     status: "Available",
     holderType: null,
     holder: null,
+    organizationId,
   });
 
   await logActivity({
@@ -162,9 +185,12 @@ export async function updateAssetAction(formData) {
   if (!canManageAssets(user.role)) return;
 
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
   const assetId = value(formData, "assetId");
   const asset = await updateAsset({
+    organizationId,
     assetId,
     name: value(formData, "name"),
     category: value(formData, "category"),
@@ -175,7 +201,12 @@ export async function updateAssetAction(formData) {
     location: value(formData, "location"),
     department: value(formData, "department") || undefined,
     description: value(formData, "description"),
-    imageUrl: value(formData, "imageUrl"),
+    imageUrl:
+      (await saveLocalUpload(formData.get("imageFile"), organizationId)) ||
+      value(formData, "imageUrl"),
+    documentUrl:
+      (await saveLocalUpload(formData.get("documentFile"), organizationId)) ||
+      value(formData, "documentUrl"),
     isBookable: formData.get("isBookable") === "on",
   });
   if (!asset) return;

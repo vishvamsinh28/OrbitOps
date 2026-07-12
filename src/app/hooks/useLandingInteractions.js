@@ -13,7 +13,9 @@ useEffect(() => {
   const revealElements = document.querySelectorAll(".reveal");
   const countElements = document.querySelectorAll("[data-count]");
   const heroSection = document.querySelector(".hero-section");
-  const tiltCards = document.querySelectorAll(".tilt-card");
+  const tiltCards = document.querySelectorAll(
+    ".tilt-card:not(.module-card)",
+  );
   const animationFrameIds = new Set();
 
   const animateCount = (element) => {

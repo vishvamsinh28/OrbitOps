@@ -45,18 +45,22 @@ export function canManageOrg(role) {
   return role === ROLES.ADMIN;
 }
 
-export const APP_NAV_ITEMS = [
+const APP_NAV_ITEMS = [
   { label: "Dashboard", href: "/app/dashboard" },
   { label: "Assets", href: "/app/assets" },
   { label: "Bookings", href: "/app/bookings" },
   { label: "Maintenance", href: "/app/maintenance" },
   { label: "Transfers", href: "/app/transfers" },
+  { label: "Audits", href: "/app/audits" },
+  { label: "Reports", href: "/app/reports", canAccess: canManageAssets },
   { label: "Admin", href: "/app/admin", canAccess: canManageOrg },
   { label: "Notifications", href: "/app/notifications" },
 ];
 
 export function getVisibleNavItems(role) {
-  return APP_NAV_ITEMS.filter((item) => !item.canAccess || item.canAccess(role));
+  return APP_NAV_ITEMS.filter(
+    (item) => !item.canAccess || item.canAccess(role),
+  ).map(({ label, href }) => ({ label, href }));
 }
 
 export function getQuickActions(role) {
@@ -78,5 +82,12 @@ export function getQuickActions(role) {
       label: "Create Transfer Request",
       href: "/app/transfers",
     },
-  ].filter((item) => !item.canAccess || item.canAccess(role));
+    {
+      label: "Run Audit Cycle",
+      href: "/app/audits",
+      canAccess: canManageAssets,
+    },
+  ].filter((item) => !item.canAccess || item.canAccess(role)).map(
+    ({ label, href }) => ({ label, href }),
+  );
 }

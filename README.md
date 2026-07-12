@@ -14,11 +14,11 @@ OrbitOps is a PostgreSQL-backed asset and operations management MVP built with N
 
 - Public landing page with responsive product sections
 - Employee-only signup flow
-- One-time first Admin setup flow
+- Organization setup flow that creates a workspace and its first Admin
 - Login, logout, and protected app routes
-- Role-aware admin, asset, booking, maintenance, transfer, and notification screens
+- Role-aware admin, asset, booking, maintenance, transfer, audit, report, and notification screens
 - Asset categories, departments, employee directory, allocations, bookings, transfers, and maintenance requests
-- Activity logging and user notifications
+- Audit cycles, discrepancy reports, activity logging, user notifications, and exportable operational reports
 
 ## Requirements
 
@@ -44,6 +44,16 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 `AUTH_SECRET` is required in production. Use a long random value and do not commit real secrets. `.env*` files are ignored by git, while `.env.example` is kept as a safe template.
 
+## Local Uploads
+
+Asset images, asset documents, and maintenance attachments can be uploaded from the app. Files are stored under:
+
+```text
+public/uploads/
+```
+
+Only the generated `/uploads/...` URL is stored in PostgreSQL. Uploaded files are ignored by git via `.gitignore`.
+
 ## Getting Started
 
 Install dependencies:
@@ -60,30 +70,33 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## First Admin Setup
+## Organization Setup
 
-On a fresh database, visit:
+To create a new organization/workspace, visit:
 
 ```text
 /setup
 ```
 
-Create the first Admin account there. After an Admin exists, `/setup` redirects to `/login`.
+Create the organization and its first Admin account there. `/setup` remains available so separate groups can create separate workspaces in the same deployment.
 
-Important: on a publicly reachable fresh deployment, create the first Admin before sharing the app URL. Until the first Admin exists, the setup page is intentionally available so the system can be bootstrapped.
+Normal `/signup` creates Employee accounts only. Employees choose the organization they are joining; Admins promote roles from `/app/admin`.
 
 ## App Routes
 
 - `/` - landing page
 - `/signup` - employee account creation
+- `/forgot-password` - employee reset request workflow
 - `/login` - employee login
-- `/setup` - one-time Admin bootstrap
+- `/setup` - create a new organization and first Admin
 - `/app/dashboard` - operational overview
 - `/app/admin` - departments, categories, and employee directory
 - `/app/assets` - asset registry, allocation, and returns
 - `/app/bookings` - bookable assets and time-slot checks
 - `/app/maintenance` - maintenance request tracking
 - `/app/transfers` - asset transfer requests and approvals
+- `/app/audits` - audit cycle creation and discrepancy tracking
+- `/app/reports` - utilization, maintenance, allocation, and booking reports
 - `/app/notifications` - user notifications
 - `/logout` - clear session and return to login
 
@@ -113,4 +126,4 @@ src/lib/data.js           PostgreSQL query helpers
 - Configure `DATABASE_URL` and `AUTH_SECRET` in the hosting provider.
 - Use Node.js 20.19 or newer.
 - Run `npm run build` during deployment.
-- Bootstrap the first Admin on the target database before wider access.
+- Create each organization through `/setup`; normal signup joins an existing organization as an Employee.

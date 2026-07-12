@@ -8,6 +8,8 @@ export function AuthForm({
   action,
   submitLabel,
   includeName = false,
+  includePassword = true,
+  organizationOptions = [],
   footer,
 }) {
   const [state, formAction, pending] = useActionState(action, {});
@@ -49,6 +51,24 @@ export function AuthForm({
             </label>
           ) : null}
 
+          {organizationOptions.length > 0 ? (
+            <label className="grid gap-2 text-sm text-[#8B98B4]">
+              Organization
+              <select
+                name="organizationId"
+                required
+                className="rounded-md border border-[rgba(148,168,210,0.22)] bg-[#0D1220] px-3 py-2.5 text-[#E9EDF6]"
+              >
+                <option value="">Select organization</option>
+                {organizationOptions.map((organization) => (
+                  <option key={organization._id} value={organization._id}>
+                    {organization.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
           <label className="grid gap-2 text-sm text-[#8B98B4]">
             Email
             <input
@@ -59,30 +79,38 @@ export function AuthForm({
             />
           </label>
 
-          <label className="grid gap-2 text-sm text-[#8B98B4]">
-            Password
-            <span className="flex overflow-hidden rounded-md border border-[rgba(148,168,210,0.22)] bg-[#0D1220] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#4FD1E8]">
-              <input
-                name="password"
-                type={showPassword ? "text" : "password"}
-                minLength={8}
-                required
-                className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-[#E9EDF6] outline-none"
-              />
-              <button
-                type="button"
-                aria-pressed={showPassword}
-                onClick={() => setShowPassword((visible) => !visible)}
-                className="border-l border-[rgba(148,168,210,0.16)] px-3 font-mono text-xs text-[#8B98B4] hover:text-[#E9EDF6]"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </span>
-          </label>
+          {includePassword ? (
+            <label className="grid gap-2 text-sm text-[#8B98B4]">
+              Password
+              <span className="flex overflow-hidden rounded-md border border-[rgba(148,168,210,0.22)] bg-[#0D1220] focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#4FD1E8]">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  minLength={8}
+                  required
+                  className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-[#E9EDF6] outline-none"
+                />
+                <button
+                  type="button"
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  className="border-l border-[rgba(148,168,210,0.16)] px-3 font-mono text-xs text-[#8B98B4] hover:text-[#E9EDF6]"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </span>
+            </label>
+          ) : null}
 
           {state?.error ? (
             <p className="rounded-md border border-[#FF6B6B]/30 bg-[#FF6B6B]/10 px-3 py-2 text-sm text-[#FFB5B5]">
               {state.error}
+            </p>
+          ) : null}
+
+          {state?.message ? (
+            <p className="rounded-md border border-[#3DDC97]/30 bg-[#3DDC97]/10 px-3 py-2 text-sm text-[#B9F8D9]">
+              {state.message}
             </p>
           ) : null}
 

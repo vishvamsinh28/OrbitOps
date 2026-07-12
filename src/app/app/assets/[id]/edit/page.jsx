@@ -1,21 +1,28 @@
 import { notFound, redirect } from "next/navigation";
 import { Panel } from "../../../components/Panel";
 import { PageHeader } from "../../../components/PageHeader";
-import { SelectField, SubmitButton, TextField } from "../../../components/FormControls";
+import {
+  FileField,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from "../../../components/FormControls";
 import { updateAssetAction } from "../../../actions/assets";
 import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { getAssetEditData, getAssetHistory } from "@/lib/data";
+import { getAssetEditData } from "@/lib/data";
 
 export default async function EditAssetPage({ params }) {
   const user = await requireUser();
-  if (!canManageAssets(user.role)) redirect("/app/dashboard");
+  if (!canManageAssets(user.role)) redirect("/app/assets");
+  const organizationId = user.organization?._id;
+  if (!organizationId) redirect("/app/assets");
 
   const { id } = await params;
   await connectDB();
 
-  const { asset, categories, departments } = await getAssetEditData(id);
-  const history = await getAssetHistory(id);
+  const { asset, categories, departments, allocationHistory, maintenanceHistory } =
+    await getAssetEditData(id, organizationId);
 
   if (!asset) notFound();
 
@@ -97,6 +104,21 @@ export default async function EditAssetPage({ params }) {
               label="Image URL"
               defaultValue={asset.imageUrl || ""}
             />
+            <TextField
+              name="documentUrl"
+              label="Document URL"
+              defaultValue={asset.documentUrl || ""}
+            />
+            <FileField
+              name="imageFile"
+              label="Replace image"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+            />
+            <FileField
+              name="documentFile"
+              label="Replace document"
+              accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+            />
           </div>
           <TextField
             name="description"
@@ -115,58 +137,68 @@ export default async function EditAssetPage({ params }) {
         </form>
       </Panel>
 
-      <Panel className="mt-6">
-        <h2 className="font-display text-xl font-semibold">Allocation history</h2>
-        <div className="mt-4 grid gap-3">
-          {history.allocations.length === 0 ? (
-            <p className="text-sm text-[#8B98B4]">No allocations yet.</p>
-          ) : (
-            history.allocations.map((a) => (
-              <div key={a._id} className="border-b border-white/10 pb-2 text-sm">
-                <span className="font-medium text-[#E9EDF6]">{a.status}</span>
-                <span className="text-[#586180]"> · </span>
-                <span className="text-[#8B98B4]">{new Date(a.createdAt).toLocaleDateString()}</span>
-                {a.expectedReturnDate ? (
-                  <>
-                    <span className="text-[#586180]"> · </span>
-                    <span className="text-[#FFB020]">Return by {new Date(a.expectedReturnDate).toLocaleDateString()}</span>
-                  </>
+      <div className="mt-6 grid gap-6 min-[961px]:grid-cols-2">
+        <Panel>
+          <h2 className="font-display text-xl font-semibold">
+            Allocation history
+          </h2>
+          <div className="mt-5 grid gap-4">
+            {allocationHistory.map((item) => (
+              <article key={item._id} className="border-b border-white/10 pb-4">
+                <p className="font-medium">
+                  {item.holderType}: {item.holderName || "Unknown"} · {item.status}
+                </p>
+                <p className="text-sm text-[#8B98B4]">
+                  Allocated{" "}
+                  {item.allocationDate
+                    ? new Date(item.allocationDate).toLocaleDateString()
+                    : "unknown"}
+                  {item.returnDate
+                    ? ` · Returned ${new Date(item.returnDate).toLocaleDateString()}`
+                    : ""}
+                </p>
+                {item.conditionNotes ? (
+                  <p className="text-sm text-[#586180]">{item.conditionNotes}</p>
                 ) : null}
-                {a.notes ? (
-                  <p className="mt-1 text-[#586180]">{a.notes}</p>
-                ) : null}
-              </div>
-            ))
-          )}
-        </div>
-      </Panel>
+              </article>
+            ))}
+            {allocationHistory.length === 0 ? (
+              <p className="text-sm text-[#8B98B4]">No allocation history.</p>
+            ) : null}
+          </div>
+        </Panel>
 
-      <Panel className="mt-6">
-        <h2 className="font-display text-xl font-semibold">Maintenance history</h2>
-        <div className="mt-4 grid gap-3">
-          {history.maintenance.length === 0 ? (
-            <p className="text-sm text-[#8B98B4]">No maintenance records yet.</p>
-          ) : (
-            history.maintenance.map((m) => (
-              <div key={m._id} className="border-b border-white/10 pb-2 text-sm">
-                <span className="font-medium text-[#E9EDF6]">{m.status}</span>
-                <span className="text-[#586180]"> · </span>
-                <span className="text-[#8B98B4]">{new Date(m.createdAt).toLocaleDateString()}</span>
-                {m.priority ? (
-                  <>
-                    <span className="text-[#586180]"> · </span>
-                    <span className="text-[#FF6B6B]">{m.priority}</span>
-                  </>
+        <Panel>
+          <h2 className="font-display text-xl font-semibold">
+            Maintenance history
+          </h2>
+          <div className="mt-5 grid gap-4">
+            {maintenanceHistory.map((item) => (
+              <article key={item._id} className="border-b border-white/10 pb-4">
+                <p className="font-medium">
+                  {item.priority} · {item.status}
+                </p>
+                <p className="text-sm text-[#8B98B4]">{item.issueDescription}</p>
+                <p className="text-sm text-[#586180]">
+                  Requested by {item.requestedByName || "Unknown"}
+                  {item.technician ? ` · Tech ${item.technician}` : ""}
+                </p>
+                {item.attachmentUrl ? (
+                  <a
+                    href={item.attachmentUrl}
+                    className="mt-2 inline-flex font-mono text-xs text-[#FFB020]"
+                  >
+                    Attachment
+                  </a>
                 ) : null}
-                <p className="mt-1 text-[#8B98B4]">{m.issueDescription}</p>
-                {m.technician ? (
-                  <p className="text-[#586180]">Technician: {m.technician}</p>
-                ) : null}
-              </div>
-            ))
-          )}
-        </div>
-      </Panel>
+              </article>
+            ))}
+            {maintenanceHistory.length === 0 ? (
+              <p className="text-sm text-[#8B98B4]">No maintenance history.</p>
+            ) : null}
+          </div>
+        </Panel>
+      </div>
     </>
   );
 }

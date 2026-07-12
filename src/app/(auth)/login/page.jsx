@@ -15,6 +15,10 @@ export default function LoginPage() {
           <Link href="/signup" className="text-[#4FD1E8]">
             Create an employee account
           </Link>
+          {" · "}
+          <Link href="/forgot-password" className="text-[#4FD1E8]">
+            Forgot password?
+          </Link>
         </>
       }
     />

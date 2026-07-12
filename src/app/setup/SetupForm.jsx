@@ -13,7 +13,15 @@ export function SetupForm() {
   return (
     <form action={action} className="mt-8 grid gap-4">
       <label className="grid gap-2 text-sm text-[#8B98B4]">
-        Name
+        Organization
+        <input
+          name="organizationName"
+          required
+          className="rounded-md border border-white/10 bg-[#0D1220] px-3 py-2.5"
+        />
+      </label>
+      <label className="grid gap-2 text-sm text-[#8B98B4]">
+        Admin name
         <input
           name="name"
           required
@@ -55,7 +63,7 @@ export function SetupForm() {
         </p>
       ) : null}
       <button className="rounded-[7px] bg-[#FFB020] px-4 py-3 font-mono text-sm font-medium text-[#0A0E1A]">
-        {pending ? "Creating..." : "Create first Admin"}
+        {pending ? "Creating..." : "Create organization"}
       </button>
     </form>
   );

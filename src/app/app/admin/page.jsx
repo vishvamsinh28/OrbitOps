@@ -4,18 +4,22 @@ import { SelectField, SubmitButton, TextField } from "../components/FormControls
 import {
   createCategoryAction,
   createDepartmentAction,
+  updateCategoryAction,
+  updateDepartmentAction,
   updateEmployeeAction,
 } from "../actions/org";
 import { requireRole, ROLES } from "@/lib/auth";
 import { listAdminData } from "@/lib/data";
 
-async function getAdminData() {
-  return listAdminData();
+async function getAdminData(organizationId) {
+  return listAdminData(organizationId);
 }
 
 export default async function AdminPage() {
-  await requireRole([ROLES.ADMIN]);
-  const { departments, categories, users } = await getAdminData();
+  const user = await requireRole([ROLES.ADMIN]);
+  const { departments, categories, users } = await getAdminData(
+    user.organization?._id,
+  );
 
   return (
     <>
@@ -32,9 +36,9 @@ export default async function AdminPage() {
             <TextField name="name" label="Department name" required />
             <SelectField name="parent" label="Parent department">
               <option value="">No parent</option>
-              {departments.map((dept) => (
-                <option key={dept._id} value={dept._id}>
-                  {dept.name}
+              {departments.map((department) => (
+                <option key={department._id} value={department._id}>
+                  {department.name}
                 </option>
               ))}
             </SelectField>
@@ -56,6 +60,11 @@ export default async function AdminPage() {
           </h2>
           <form action={createCategoryAction} className="mt-5 grid gap-4">
             <TextField name="name" label="Category name" required />
+            <TextField
+              name="customFields"
+              label="Custom fields"
+              placeholder="Warranty period, VIN, Floor"
+            />
             <SubmitButton>Create category</SubmitButton>
           </form>
         </Panel>
@@ -116,46 +125,81 @@ export default async function AdminPage() {
       </Panel>
 
       <Panel className="mt-6">
-        <h2 className="font-display text-xl font-semibold">Departments</h2>
-        <div className="mt-4 grid gap-3">
-          {departments.length === 0 ? (
-            <p className="text-sm text-[#8B98B4]">No departments yet.</p>
-          ) : (
-            departments.map((dept) => (
-              <div key={dept._id} className="flex items-center gap-3 text-sm">
-                <span className="font-medium text-[#E9EDF6]">{dept.name}</span>
-                <span className="text-[#586180]">·</span>
-                <span className="text-[#8B98B4]">{dept.status}</span>
-                {dept.parent ? (
-                  <>
-                    <span className="text-[#586180]">·</span>
-                    <span className="text-[#4FD1E8]">Parent: {dept.parent.name}</span>
-                  </>
-                ) : null}
-                {dept.head ? (
-                  <>
-                    <span className="text-[#586180]">·</span>
-                    <span className="text-[#8B98B4]">Head: {dept.head.name}</span>
-                  </>
-                ) : null}
+        <h2 className="font-display text-xl font-semibold">
+          Department management
+        </h2>
+        <div className="mt-5 grid gap-4">
+          {departments.map((department) => (
+            <form
+              key={department._id}
+              action={updateDepartmentAction}
+              className="grid gap-3 border-b border-white/10 pb-4 min-[1000px]:grid-cols-[1fr_180px_180px_120px_auto]"
+            >
+              <input type="hidden" name="departmentId" value={department._id} />
+              <TextField name="name" label="Name" defaultValue={department.name} required />
+              <SelectField name="parent" label="Parent" defaultValue={department.parent?._id || ""}>
+                <option value="">No parent</option>
+                {departments
+                  .filter((item) => item._id !== department._id)
+                  .map((item) => (
+                    <option key={item._id} value={item._id}>
+                      {item.name}
+                    </option>
+                  ))}
+              </SelectField>
+              <SelectField name="head" label="Head" defaultValue={department.head?._id || ""}>
+                <option value="">No head</option>
+                {users.map((employee) => (
+                  <option key={employee._id} value={employee._id}>
+                    {employee.name}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField name="status" label="Status" defaultValue={department.status}>
+                {["Active", "Inactive"].map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </SelectField>
+              <div className="self-end">
+                <SubmitButton>Save</SubmitButton>
               </div>
-            ))
-          )}
+            </form>
+          ))}
         </div>
+      </Panel>
 
-        <h2 className="mt-6 font-display text-xl font-semibold">Categories</h2>
-        <div className="mt-4 grid gap-3">
-          {categories.length === 0 ? (
-            <p className="text-sm text-[#8B98B4]">No categories yet.</p>
-          ) : (
-            categories.map((cat) => (
-              <div key={cat._id} className="flex items-center gap-3 text-sm">
-                <span className="font-medium text-[#E9EDF6]">{cat.name}</span>
-                <span className="text-[#586180]">·</span>
-                <span className="text-[#8B98B4]">{cat.status}</span>
+      <Panel className="mt-6">
+        <h2 className="font-display text-xl font-semibold">
+          Category management
+        </h2>
+        <div className="mt-5 grid gap-4">
+          {categories.map((category) => (
+            <form
+              key={category._id}
+              action={updateCategoryAction}
+              className="grid gap-3 border-b border-white/10 pb-4 min-[900px]:grid-cols-[1fr_1fr_140px_auto]"
+            >
+              <input type="hidden" name="categoryId" value={category._id} />
+              <TextField name="name" label="Name" defaultValue={category.name} required />
+              <TextField
+                name="customFields"
+                label="Custom fields"
+                defaultValue={(category.customFields || []).join(", ")}
+              />
+              <SelectField name="status" label="Status" defaultValue={category.status}>
+                {["Active", "Inactive"].map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </SelectField>
+              <div className="self-end">
+                <SubmitButton>Save</SubmitButton>
               </div>
-            ))
-          )}
+            </form>
+          ))}
         </div>
       </Panel>
     </>

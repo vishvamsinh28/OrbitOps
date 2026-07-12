@@ -5,7 +5,9 @@ import { canManageAssets, requireUser, ROLES } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import {
   activeHolderExists,
+  closeActiveAllocationsForAsset,
   completeTransfer,
+  createAllocation,
   createTransferRequest,
   decideTransfer,
   getAssetById,
@@ -18,18 +20,21 @@ import { value } from "./shared";
 export async function createTransferAction(formData) {
   const user = await requireUser();
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
-  const asset = await getAssetById(value(formData, "asset"));
+  const asset = await getAssetById(value(formData, "asset"), organizationId);
   if (!asset) return;
 
   const toHolderType = value(formData, "toHolderType");
   const toHolder = value(formData, "toHolder");
-  const holderExists = await activeHolderExists(toHolderType, toHolder);
+  const holderExists = await activeHolderExists(toHolderType, toHolder, organizationId);
 
   if (!holderExists) return;
 
   const transfer = await createTransferRequest({
     asset: asset._id,
+    organizationId,
     requestedBy: user._id,
     fromHolderType: asset.currentHolderType,
     fromHolder: asset.currentHolder,
@@ -51,14 +56,29 @@ export async function createTransferAction(formData) {
 
 export async function decideTransferAction(formData) {
   const user = await requireUser();
-  if (!canManageAssets(user.role) && user.role !== ROLES.DEPARTMENT_HEAD) {
+  const isAssetManager = canManageAssets(user.role);
+  const isDepartmentHead = user.role === ROLES.DEPARTMENT_HEAD;
+  if (!isAssetManager && !isDepartmentHead) {
     return;
   }
 
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
-  const existingTransfer = await getTransferById(value(formData, "transfer"));
+  const existingTransfer = await getTransferById(value(formData, "transfer"), organizationId);
   if (!existingTransfer || existingTransfer.status !== "Requested") return;
+  if (isDepartmentHead) {
+    const departmentId = user.department?._id;
+    const touchesDepartment =
+      departmentId &&
+      ((existingTransfer.fromHolderType === "Department" &&
+        existingTransfer.fromHolder === departmentId) ||
+        (existingTransfer.toHolderType === "Department" &&
+          existingTransfer.toHolder === departmentId));
+
+    if (!touchesDepartment) return;
+  }
 
   // Department Heads can only decide transfers within their own department
   if (user.role === ROLES.DEPARTMENT_HEAD) {
@@ -71,16 +91,32 @@ export async function decideTransferAction(formData) {
     status: value(formData, "decision") === "approve" ? "Approved" : "Rejected",
     notes: value(formData, "decisionNotes"),
     approvedBy: user._id,
+    organizationId,
   });
   if (!transfer) return;
 
   if (transfer.status === "Approved") {
+    await closeActiveAllocationsForAsset(
+      transfer.asset,
+      value(formData, "decisionNotes") || "Transferred to a new holder",
+      organizationId,
+    );
+    await createAllocation({
+      asset: transfer.asset,
+      organizationId,
+      holderType: transfer.toHolderType,
+      holder: transfer.toHolder,
+      allocatedBy: user._id,
+      allocationDate: new Date(),
+      notes: "Created from approved transfer request",
+    });
     await updateAssetHolder(transfer.asset, {
       status: "Allocated",
       holderType: transfer.toHolderType,
       holder: transfer.toHolder,
+      organizationId,
     });
-    await completeTransfer(transfer._id);
+    await completeTransfer(transfer._id, organizationId);
     transfer.status = "Completed";
   }
 

@@ -8,15 +8,17 @@ import {
 import { canManageAssets, requireUser, ROLES } from "@/lib/auth";
 import { listTransferData } from "@/lib/data";
 
-async function getTransferData() {
-  return listTransferData();
+async function getTransferData(organizationId) {
+  return listTransferData(organizationId);
 }
 
 export default async function TransfersPage() {
   const user = await requireUser();
   const canDecide =
     canManageAssets(user.role) || user.role === ROLES.DEPARTMENT_HEAD;
-  const { assets, users, departments, transfers } = await getTransferData();
+  const { assets, users, departments, transfers } = await getTransferData(
+    user.organization?._id,
+  );
 
   return (
     <>

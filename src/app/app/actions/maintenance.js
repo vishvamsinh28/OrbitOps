@@ -10,23 +10,38 @@ import {
   updateMaintenanceRequest,
 } from "@/lib/data";
 import { logActivity } from "@/lib/activity";
+import { saveLocalUpload } from "@/lib/uploads";
 import { value } from "./shared";
+
+const VALID_PRIORITIES = ["Low", "Medium", "High", "Critical"];
+const VALID_STATUSES = [
+  "Pending",
+  "Approved",
+  "Rejected",
+  "Technician Assigned",
+  "In Progress",
+  "Resolved",
+];
 
 export async function createMaintenanceAction(formData) {
   const user = await requireUser();
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
-  const assetId = value(formData, "asset");
-  const asset = await getAssetById(assetId);
-  if (!asset) return;
-
-  // Only the asset holder or a manager can raise maintenance
-  if (!canManageAssets(user.role) && asset.currentHolder !== user._id) return;
+  const asset = await getAssetById(value(formData, "asset"), organizationId);
+  if (!asset || !value(formData, "issueDescription")) return;
 
   const request = await createMaintenanceRequest({
-    asset: assetId,
+    asset: asset._id,
+    organizationId,
     issueDescription: value(formData, "issueDescription"),
-    priority: value(formData, "priority") || "Medium",
+    priority: VALID_PRIORITIES.includes(value(formData, "priority"))
+      ? value(formData, "priority")
+      : "Medium",
+    attachmentUrl:
+      (await saveLocalUpload(formData.get("attachmentFile"), organizationId)) ||
+      value(formData, "attachmentUrl"),
     requestedBy: user._id,
   });
 
@@ -47,23 +62,29 @@ export async function updateMaintenanceAction(formData) {
   if (!canManageAssets(user.role)) return;
 
   await connectDB();
+  const organizationId = user.organization?._id;
+  if (!organizationId) return;
 
   const request = await updateMaintenanceRequest({
     requestId: value(formData, "request"),
-    status: value(formData, "status"),
+    status: VALID_STATUSES.includes(value(formData, "status"))
+      ? value(formData, "status")
+      : "Pending",
     technician: value(formData, "technician"),
     resolutionNotes: value(formData, "resolutionNotes"),
+    organizationId,
   });
   if (!request) return;
 
   if (request.status === "Approved") {
     await updateAssetHolder(request.asset, {
       status: "Under Maintenance",
+      organizationId,
     });
   }
 
   if (request.status === "Resolved") {
-    await updateAssetHolder(request.asset, { status: "Available" });
+    await updateAssetHolder(request.asset, { status: "Available", organizationId });
   }
 
   await logActivity({

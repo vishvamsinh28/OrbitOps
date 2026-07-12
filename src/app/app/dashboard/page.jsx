@@ -3,13 +3,13 @@ import { Panel } from "../components/Panel";
 import { getQuickActions, requireUser } from "@/lib/auth";
 import { listDashboardData } from "@/lib/data";
 
-async function getDashboardData() {
-  return listDashboardData();
+async function getDashboardData(organizationId) {
+  return listDashboardData(organizationId);
 }
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const { stats, recentActivity } = await getDashboardData();
+  const { stats, recentActivity } = await getDashboardData(user.organization?._id);
   const quickActions = getQuickActions(user.role);
 
   return (

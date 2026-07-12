@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { AuthForm } from "../AuthForm";
 import { signupAction } from "../actions";
+import { connectDB } from "@/lib/db";
+import { listOrganizations } from "@/lib/data";
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  await connectDB();
+  const organizations = await listOrganizations();
+
   return (
     <AuthForm
       title="Create your employee account"
@@ -10,6 +15,7 @@ export default function SignupPage() {
       action={signupAction}
       submitLabel="Create account"
       includeName
+      organizationOptions={organizations}
       footer={
         <>
           Already have an account?{" "}

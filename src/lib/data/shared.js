@@ -13,6 +13,9 @@ export function userRow(row) {
     passwordHash: row.passwordHash,
     role: row.role,
     status: row.status,
+    organization: row.organizationId
+      ? { _id: row.organizationId, name: row.organizationName }
+      : null,
     department: row.departmentId
       ? { _id: row.departmentId, name: row.departmentName }
       : null,
@@ -39,6 +42,7 @@ export function assetRow(row) {
       : null,
     description: row.description,
     imageUrl: row.imageUrl,
+    documentUrl: row.documentUrl,
     isBookable: row.isBookable,
     status: row.status,
     currentHolderType: row.currentHolderType,
