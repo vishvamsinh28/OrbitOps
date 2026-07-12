@@ -30,6 +30,14 @@ export default async function AdminPage() {
           </h2>
           <form action={createDepartmentAction} className="mt-5 grid gap-4">
             <TextField name="name" label="Department name" required />
+            <SelectField name="parent" label="Parent department">
+              <option value="">No parent</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
+            </SelectField>
             <SelectField name="head" label="Department head">
               <option value="">No head yet</option>
               {users.map((user) => (
@@ -108,14 +116,46 @@ export default async function AdminPage() {
       </Panel>
 
       <Panel className="mt-6">
-        <h2 className="font-display text-xl font-semibold">Current setup</h2>
-        <div className="mt-4 grid gap-4 min-[760px]:grid-cols-2">
-          <p className="text-sm text-[#8B98B4]">
-            Departments: {departments.map((item) => item.name).join(", ") || "none"}
-          </p>
-          <p className="text-sm text-[#8B98B4]">
-            Categories: {categories.map((item) => item.name).join(", ") || "none"}
-          </p>
+        <h2 className="font-display text-xl font-semibold">Departments</h2>
+        <div className="mt-4 grid gap-3">
+          {departments.length === 0 ? (
+            <p className="text-sm text-[#8B98B4]">No departments yet.</p>
+          ) : (
+            departments.map((dept) => (
+              <div key={dept._id} className="flex items-center gap-3 text-sm">
+                <span className="font-medium text-[#E9EDF6]">{dept.name}</span>
+                <span className="text-[#586180]">·</span>
+                <span className="text-[#8B98B4]">{dept.status}</span>
+                {dept.parent ? (
+                  <>
+                    <span className="text-[#586180]">·</span>
+                    <span className="text-[#4FD1E8]">Parent: {dept.parent.name}</span>
+                  </>
+                ) : null}
+                {dept.head ? (
+                  <>
+                    <span className="text-[#586180]">·</span>
+                    <span className="text-[#8B98B4]">Head: {dept.head.name}</span>
+                  </>
+                ) : null}
+              </div>
+            ))
+          )}
+        </div>
+
+        <h2 className="mt-6 font-display text-xl font-semibold">Categories</h2>
+        <div className="mt-4 grid gap-3">
+          {categories.length === 0 ? (
+            <p className="text-sm text-[#8B98B4]">No categories yet.</p>
+          ) : (
+            categories.map((cat) => (
+              <div key={cat._id} className="flex items-center gap-3 text-sm">
+                <span className="font-medium text-[#E9EDF6]">{cat.name}</span>
+                <span className="text-[#586180]">·</span>
+                <span className="text-[#8B98B4]">{cat.status}</span>
+              </div>
+            ))
+          )}
         </div>
       </Panel>
     </>

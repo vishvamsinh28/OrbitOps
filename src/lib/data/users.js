@@ -52,8 +52,13 @@ export async function activeHolderExists(type, holderId) {
 
 export async function listAdminData() {
   const [departments, categories, users] = await Promise.all([
-    query(`select d.id as "_id", d.name, d.status, h.id as "headId", h.name as "headName"
-      from departments d left join users h on h.id = d.head_id order by d.name`),
+    query(`select d.id as "_id", d.name, d.status,
+      d.parent_id as "parentId", p.name as "parentName",
+      h.id as "headId", h.name as "headName"
+      from departments d
+      left join departments p on p.id = d.parent_id
+      left join users h on h.id = d.head_id
+      order by d.name`),
     query(`select id as "_id", name, status from asset_categories order by name`),
     query(`select u.id as "_id", u.name, u.email, u.role, u.status,
       u.department_id as "departmentId", d.name as "departmentName", u.created_at as "createdAt"
@@ -61,8 +66,11 @@ export async function listAdminData() {
   ]);
   return {
     departments: departments.rows.map((row) => ({
-      ...row,
+      _id: row._id,
+      name: row.name,
+      status: row.status,
       head: row.headId ? { _id: row.headId, name: row.headName } : null,
+      parent: row.parentId ? { _id: row.parentId, name: row.parentName } : null,
     })),
     categories: categories.rows,
     users: users.rows.map(userRow),
