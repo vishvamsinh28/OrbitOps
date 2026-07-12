@@ -142,10 +142,19 @@ export async function createAllocation(data) {
 }
 
 export async function updateAssetHolder(assetId, { status, holderType, holder }) {
+  const sets = ["status = $2", "updated_at = now()"];
+  const params = [assetId, status];
+  if (holderType !== undefined) {
+    sets.push(`current_holder_type = $${params.length + 1}`);
+    params.push(holderType);
+  }
+  if (holder !== undefined) {
+    sets.push(`current_holder_id = $${params.length + 1}`);
+    params.push(holder);
+  }
   await query(
-    `update assets set status = $2, current_holder_type = $3,
-      current_holder_id = $4, updated_at = now() where id = $1`,
-    [assetId, status, holderType || null, holder || null],
+    `update assets set ${sets.join(", ")} where id = $1`,
+    params,
   );
 }
 
