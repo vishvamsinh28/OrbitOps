@@ -27,7 +27,7 @@ export const modules = [
     id: "05",
     icon: "transfer",
     title: "Allocation & transfer",
-    body: "Double allocation is blocked outright — a held asset routes the requester into a transfer request instead of overwriting the current holder.",
+    body: "Prevent double allocation by redirecting requests for held assets into a controlled transfer workflow.",
   },
   {
     id: "06",
