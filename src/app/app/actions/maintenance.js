@@ -5,6 +5,7 @@ import { canManageAssets, requireUser } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import {
   createMaintenanceRequest,
+  getAssetById,
   updateAssetHolder,
   updateMaintenanceRequest,
 } from "@/lib/data";
@@ -15,8 +16,15 @@ export async function createMaintenanceAction(formData) {
   const user = await requireUser();
   await connectDB();
 
+  const assetId = value(formData, "asset");
+  const asset = await getAssetById(assetId);
+  if (!asset) return;
+
+  // Only the asset holder or a manager can raise maintenance
+  if (!canManageAssets(user.role) && asset.currentHolder !== user._id) return;
+
   const request = await createMaintenanceRequest({
-    asset: value(formData, "asset"),
+    asset: assetId,
     issueDescription: value(formData, "issueDescription"),
     priority: value(formData, "priority") || "Medium",
     requestedBy: user._id,

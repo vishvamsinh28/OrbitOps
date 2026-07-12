@@ -49,7 +49,8 @@ export async function getAssetById(assetId) {
   const result = await query(
     `select id as "_id", name, asset_tag as "assetTag", status,
       is_bookable as "isBookable", current_holder_type as "currentHolderType",
-      current_holder_id as "currentHolder" from assets where id = $1`,
+      current_holder_id as "currentHolder", department_id as "departmentId"
+      from assets where id = $1`,
     [assetId],
   );
   return assetRow(one(result));

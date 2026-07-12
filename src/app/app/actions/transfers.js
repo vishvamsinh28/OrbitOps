@@ -60,6 +60,12 @@ export async function decideTransferAction(formData) {
   const existingTransfer = await getTransferById(value(formData, "transfer"));
   if (!existingTransfer || existingTransfer.status !== "Requested") return;
 
+  // Department Heads can only decide transfers within their own department
+  if (user.role === ROLES.DEPARTMENT_HEAD) {
+    const asset = await getAssetById(existingTransfer.asset);
+    if (!asset || asset.departmentId !== user.department?._id) return;
+  }
+
   const transfer = await decideTransfer({
     transferId: value(formData, "transfer"),
     status: value(formData, "decision") === "approve" ? "Approved" : "Rejected",

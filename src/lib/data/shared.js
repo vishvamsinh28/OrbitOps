@@ -43,5 +43,6 @@ export function assetRow(row) {
     status: row.status,
     currentHolderType: row.currentHolderType,
     currentHolder: row.currentHolder,
+    departmentId: row.departmentId,
   };
 }

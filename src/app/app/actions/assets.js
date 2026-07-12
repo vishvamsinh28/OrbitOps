@@ -103,9 +103,35 @@ export async function allocateAssetAction(formData) {
 
 export async function returnAssetAction(formData) {
   const user = await requireUser();
-  if (!canManageAssets(user.role)) return;
-
   await connectDB();
+
+  if (!canManageAssets(user.role)) {
+    // Allow asset holder to initiate return
+    const allocationId = value(formData, "allocation");
+    const allocation = await returnAllocation({
+      allocationId,
+      conditionNotes: value(formData, "conditionNotes"),
+    });
+    if (!allocation) return;
+    // Verify the user is the current holder
+    const asset = await getAssetById(allocation.asset);
+    if (!asset || asset.currentHolder !== user._id) return;
+    await updateAssetHolder(allocation.asset, {
+      status: "Available",
+      holderType: null,
+      holder: null,
+    });
+    await logActivity({
+      actor: user._id,
+      action: "Asset returned",
+      entityType: "Allocation",
+      entityId: allocation._id,
+      description: "Returned an allocated asset.",
+    });
+    revalidatePath("/app/assets");
+    revalidatePath("/app/dashboard");
+    return;
+  }
 
   const allocation = await returnAllocation({
     allocationId: value(formData, "allocation"),
