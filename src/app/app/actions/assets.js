@@ -132,15 +132,17 @@ export async function returnAssetAction(formData) {
     const allocation = await returnAllocation({
       allocationId,
       conditionNotes: value(formData, "conditionNotes"),
+      organizationId,
     });
     if (!allocation) return;
     // Verify the user is the current holder
-    const asset = await getAssetById(allocation.asset);
+    const asset = await getAssetById(allocation.asset, organizationId);
     if (!asset || asset.currentHolder !== user._id) return;
     await updateAssetHolder(allocation.asset, {
       status: "Available",
       holderType: null,
       holder: null,
+      organizationId,
     });
     await logActivity({
       actor: user._id,

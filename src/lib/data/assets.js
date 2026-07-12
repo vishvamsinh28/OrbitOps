@@ -81,7 +81,8 @@ export async function listAssetsData(organizationId, filters = {}) {
 export async function getAssetById(assetId, organizationId) {
   const result = await query(
     `select id as "_id", name, asset_tag as "assetTag", status,
-      is_bookable as "isBookable", current_holder_type as "currentHolderType",
+      department_id as "departmentId", is_bookable as "isBookable",
+      current_holder_type as "currentHolderType",
       current_holder_id as "currentHolder"
      from assets where id = $1 and organization_id = $2`,
     [assetId, organizationId],

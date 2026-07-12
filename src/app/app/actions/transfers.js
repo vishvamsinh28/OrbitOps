@@ -82,7 +82,7 @@ export async function decideTransferAction(formData) {
 
   // Department Heads can only decide transfers within their own department
   if (user.role === ROLES.DEPARTMENT_HEAD) {
-    const asset = await getAssetById(existingTransfer.asset);
+    const asset = await getAssetById(existingTransfer.asset, organizationId);
     if (!asset || asset.departmentId !== user.department?._id) return;
   }
 

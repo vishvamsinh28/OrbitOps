@@ -92,7 +92,11 @@ export default async function MaintenancePage() {
                 ) : null}
                 {canManage ? (
                   <div className="grid gap-3 min-[760px]:grid-cols-3">
-                    <SelectField name="status" label="Status">
+                    <SelectField
+                      name="status"
+                      label="Status"
+                      defaultValue={request.status}
+                    >
                       {[
                         "Pending",
                         "Approved",
@@ -106,8 +110,16 @@ export default async function MaintenancePage() {
                         </option>
                       ))}
                     </SelectField>
-                    <TextField name="technician" label="Technician" />
-                    <TextField name="resolutionNotes" label="Resolution notes" />
+                    <TextField
+                      name="technician"
+                      label="Technician"
+                      defaultValue={request.technician || ""}
+                    />
+                    <TextField
+                      name="resolutionNotes"
+                      label="Resolution notes"
+                      defaultValue={request.resolutionNotes || ""}
+                    />
                     <SubmitButton>Update</SubmitButton>
                   </div>
                 ) : null}
