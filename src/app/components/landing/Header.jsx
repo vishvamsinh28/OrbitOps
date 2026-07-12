@@ -44,12 +44,12 @@ export function Header() {
         </div>
 
         <a
-          href="#cta"
+          href="/signup"
           className="rounded-md border border-[rgba(148,168,210,0.28)] px-3 py-[9px] text-center font-mono text-[12px] leading-none transition-all hover:border-[#FFB020] hover:bg-[rgba(255,176,32,0.14)] hover:text-[#FFB020] min-[421px]:px-[18px] min-[421px]:text-[13px]"
         >
-          <span className="min-[421px]:hidden">Walkthrough</span>
+          <span className="min-[421px]:hidden">Sign up</span>
           <span className="hidden min-[421px]:inline">
-            Request a walkthrough
+            Create account
           </span>
         </a>
       </nav>

@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# OrbitOps
+
+OrbitOps is a MongoDB-backed asset and operations management MVP built with Next.js. It combines employee onboarding, asset registration, allocation, bookings, maintenance, transfers, notifications, activity logs, and audit-ready records in one system of record.
+
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19
+- Tailwind CSS 4
+- MongoDB with Mongoose
+- Cookie-based server-side auth
+
+## Features
+
+- Public landing page with responsive product sections
+- Employee-only signup flow
+- One-time first Admin setup flow
+- Login, logout, and protected app routes
+- Role-aware admin, asset, booking, maintenance, transfer, and notification screens
+- Asset categories, departments, employee directory, allocations, bookings, transfers, and maintenance requests
+- Activity logging and user notifications
+
+## Requirements
+
+- Node.js 20.19 or newer
+- npm
+- MongoDB Atlas or a local MongoDB database
+
+## Environment
+
+Create a local `.env` file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Set these values:
+
+```bash
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/orbitops
+AUTH_SECRET=replace-with-a-long-random-secret
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+`AUTH_SECRET` is required in production. Use a long random value and do not commit real secrets. `.env*` files are ignored by git, while `.env.example` is kept as a safe template.
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## First Admin Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+On a fresh database, visit:
 
-## Learn More
+```text
+/setup
+```
 
-To learn more about Next.js, take a look at the following resources:
+Create the first Admin account there. After an Admin exists, `/setup` redirects to `/login`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Important: on a publicly reachable fresh deployment, create the first Admin before sharing the app URL. Until the first Admin exists, the setup page is intentionally available so the system can be bootstrapped.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## App Routes
 
-## Deploy on Vercel
+- `/` - landing page
+- `/signup` - employee account creation
+- `/login` - employee login
+- `/setup` - one-time Admin bootstrap
+- `/app/dashboard` - operational overview
+- `/app/admin` - departments, categories, and employee directory
+- `/app/assets` - asset registry, allocation, and returns
+- `/app/bookings` - bookable assets and time-slot checks
+- `/app/maintenance` - maintenance request tracking
+- `/app/transfers` - asset transfer requests and approvals
+- `/app/notifications` - user notifications
+- `/logout` - clear session and return to login
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev
+npm run build
+npm run start
+```
+
+Use `npm run build` before merging or deploying.
+
+## Project Structure
+
+```text
+src/app/                  Next.js routes and app UI
+src/app/components/       Landing page components
+src/app/app/actions/      Server actions for protected workflows
+src/app/app/components/   Shared app shell and form UI
+src/lib/                  Database, auth, session, password, and activity helpers
+src/models/               Mongoose models
+```
+
+## Deployment Notes
+
+- Configure `MONGODB_URI` and `AUTH_SECRET` in the hosting provider.
+- Use Node.js 20.19 or newer.
+- Run `npm run build` during deployment.
+- Bootstrap the first Admin on the target database before wider access.
