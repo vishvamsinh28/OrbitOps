@@ -22,17 +22,17 @@ export function CtaFooter() {
 
     <div className="flex flex-wrap justify-center gap-3.5">
       <a
-        href="#modules"
+        href="/signup"
         className="inline-flex items-center rounded-[7px] border border-transparent bg-[#FFB020] px-[22px] py-[13px] font-mono text-[13.5px] font-medium text-[#0A0E1A] shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_10px_24px_-12px_rgba(255,176,32,0.45)] transition-all hover:-translate-y-px hover:shadow-[0_0_0_4px_rgba(255,176,32,0.14),0_14px_28px_-12px_rgba(255,176,32,0.55)]"
       >
-        Explore the modules
+        Create account
       </a>
 
       <a
-        href="#roles"
+        href="/login"
         className="inline-flex items-center rounded-[7px] border border-[rgba(148,168,210,0.28)] bg-[rgba(255,255,255,0.02)] px-[22px] py-[13px] font-mono text-[13.5px] font-medium transition-all hover:-translate-y-px hover:border-[#4FD1E8] hover:bg-[rgba(79,209,232,0.14)] hover:text-[#4FD1E8]"
       >
-        See role access
+        Log in
       </a>
     </div>
   </div>
