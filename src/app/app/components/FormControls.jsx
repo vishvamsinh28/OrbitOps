@@ -31,7 +31,7 @@ export function SelectField({ label, name, children, required, ...props }) {
 
 export function SubmitButton({ children }) {
   return (
-    <button className="rounded-[7px] bg-[#FFB020] px-4 py-2.5 font-mono text-sm font-medium text-[#0A0E1A]">
+    <button type="submit" className="rounded-[7px] bg-[#FFB020] px-4 py-2.5 font-mono text-sm font-medium text-[#0A0E1A]">
       {children}
     </button>
   );
